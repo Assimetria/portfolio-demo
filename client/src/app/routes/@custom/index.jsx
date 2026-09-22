@@ -7,10 +7,11 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import { SearchTestingGuide } from '../pages/app/@custom/SearchTestingGuide'
-import { WebhookBenchmark } from '../pages/app/@custom/WebhookBenchmark'
+import { lazy } from 'react'
+import { ProtectedRoute } from '../../components/@system/ProtectedRoute'
+
+const PortfolioProjectsPage = lazy(() => import('../../pages/app/@custom/PortfolioProjectsPage').then((m) => ({ default: m.PortfolioProjectsPage })))
 
 export const customRoutes = [
-  { path: '/app/search-testing-guide', element: <SearchTestingGuide /> },
-{ path: '/app/webhook-benchmark', element: <WebhookBenchmark /> },
+  { path: '/app/portfolio-projects', element: <ProtectedRoute><PortfolioProjectsPage /></ProtectedRoute> },
 ]
