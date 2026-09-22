@@ -9,9 +9,7 @@
 // export const createItem = (data) => api.post('/items', data)
 // export const updateItem = (id, data) => api.put(`/items/${id}`, data)
 // export const deleteItem = (id) => api.delete(`/items/${id}`)
-
 import { api } from '../../lib/@system/api'
 
-export const getSearchTestConfig = () => api.get('/search-test')
-export const getWebhookBenchmark = (params) => api.get('/webhook-benchmark', { params })
-export const runSearchTest = (params) => api.post('/search-test/run', params)
+export const getFileUploadA11yStandards = () => api.get('/file-upload-a11y')
+export const getFileUploadA11yStandard = (id) => api.get(`/file-upload-a11y/${id}`)

@@ -7,10 +7,9 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import { SearchTestingGuide } from '../pages/app/@custom/SearchTestingGuide'
-import { WebhookBenchmark } from '../pages/app/@custom/WebhookBenchmark'
+export const customRoutes = []
+import { FileUploadA11yPage } from '../pages/static/@custom/FileUploadA11yPage'
 
 export const customRoutes = [
-  { path: '/app/search-testing-guide', element: <SearchTestingGuide /> },
-{ path: '/app/webhook-benchmark', element: <WebhookBenchmark /> },
+  { path: '/file-upload-a11y', element: <FileUploadA11yPage /> },
 ]
