@@ -7,11 +7,9 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import FAQPage from '../pages/static/@custom/FAQPage'
-
 export const customRoutes = [
   {
-    path: '/faq',
-    element: <FAQPage />,
+    path: '/app/api-gateway-guide',
+    lazy: () => import('../../pages/app/@custom/ApiGatewayGuidePage'),
   },
 ]
