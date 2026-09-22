@@ -19,6 +19,12 @@ export const TEST_USER = {
 /** True when the suite runs against a server with a real database */
 export const HAS_DATABASE = !!process.env.DATABASE_URL
 
+/** CDN URL for auth assets — empty when not configured */
+export const CDN_URL = process.env.CDN_URL ?? ''
+
+/** Auth-specific CDN URL — falls back to CDN_URL when not configured */
+export const AUTH_CDN_URL = process.env.AUTH_CDN_URL ?? CDN_URL
+
 export const test = base.extend({
   /** Navigate to /auth and expose login helpers */
   authPage: async ({ page }, use) => {
