@@ -6,3 +6,6 @@
 import { LoadingSpinner } from './LoadingSpinner'
 
 export { LoadingSpinner }
+import { NotificationUpload } from './NotificationUpload'
+
+export { NotificationUpload }
