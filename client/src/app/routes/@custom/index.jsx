@@ -7,4 +7,14 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-export const customRoutes = []
+
+import { lazy } from 'react'
+import { ProtectedRoute } from '../../components/@system/ProtectedRoute'
+
+const ActivityPage = lazy(() =>
+  import(/* webpackChunkName: "pages-app" */ '../../pages/app/@custom/ActivityPage').then((m) => ({ default: m.ActivityPage }))
+)
+
+export const customRoutes = [
+  { path: '/app/activity', element: <ProtectedRoute><ActivityPage /></ProtectedRoute> },
+]
