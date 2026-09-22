@@ -12,6 +12,6 @@
 
 import { api } from '../../lib/@system/api'
 
-export const getSearchTestConfig = () => api.get('/search-test')
-export const getWebhookBenchmark = (params) => api.get('/webhook-benchmark', { params })
-export const runSearchTest = (params) => api.post('/search-test/run', params)
+export const getAlertingConfig = () => api.get('/comments-alerting/config')
+export const updateAlertingConfig = (data) => api.put('/comments-alerting/config', data)
+export const sendTestAlert = () => api.post('/comments-alerting/test')

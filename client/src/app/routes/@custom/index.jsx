@@ -7,10 +7,12 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import { SearchTestingGuide } from '../pages/app/@custom/SearchTestingGuide'
-import { WebhookBenchmark } from '../pages/app/@custom/WebhookBenchmark'
+import CommentsAlertingPage from '../pages/app/@custom/CommentsAlertingPage'
 
 export const customRoutes = [
-  { path: '/app/search-testing-guide', element: <SearchTestingGuide /> },
-{ path: '/app/webhook-benchmark', element: <WebhookBenchmark /> },
+  {
+    path: '/app/comments-alerting',
+    element: <CommentsAlertingPage />,
+    handle: { label: 'Comments Alerting' },
+  },
 ]
