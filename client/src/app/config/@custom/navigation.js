@@ -77,6 +77,17 @@ export const sections = [
  * @type {import('@/app/config/@system/navigation-merge').PageEntry[]}
  */
 export const pages = [
+{
+    path: '/app/push-notifications',
+    label: 'Push Notifications',
+    icon: 'Bell',
+    sidebar: true,
+    section: 'main',
+    order: 30,
+    requiresAuth: true,
+    component: () => import('../../pages/app/@custom/PushNotificationsPage'),
+    guard: 'auth',
+  },
   // Template ships with system defaults only.
   // Products add entries here. Example:
   //

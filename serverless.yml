@@ -1,0 +1,196 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Serverless Framework — Push Notifications Lambda Deployment ([SV4-172])
+#
+# Deploy command (requires AWS credentials and serverless CLI):
+#   sls deploy --stage production
+#
+# Provides:
+#   - pushNotificationsProcessor — main Lambda for batch notification processing
+#   - SQS queue as event source for async batch processing
+#   - CloudWatch Events for periodic maintenance
+#   - IAM roles with least-privilege permissions
+#   - DynamoDB table for processor state tracking
+#   - SNS topic for push notification fan-out
+#
+# Environment variables are sourced from .env or AWS SSM Parameter Store.
+# ─────────────────────────────────────────────────────────────────────────────
+
+service: push-notifications-processor
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ${env:AWS_REGION, 'eu-west-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  timeout: 30
+  logRetentionInDays: 30
+  environment:
+    PUSH_NOTIFICATIONS_TABLE: !Ref PushNotificationsTable
+    NOTIFICATION_SNS_TOPIC: !Ref PushNotificationTopic
+    PUSH_NOTIFICATION_TIMEOUT_MS: '5000'
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: !Ref PushNotificationTopic
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Query
+        - dynamodb:Scan
+      Resource:
+        - !GetAtt PushNotificationsTable.arn
+        - !Sub '${PushNotificationsTable.arn}/*'
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource: !GetAtt PushNotificationQueue.Arn
+functions:
+  pushNotificationsProcessor:
+    handler: server/src/lambda/@custom/push-notifications.handler
+    name: ${self:service}-${self:provider.stage}-processor
+    description: Processes push notification batches from SQS and direct invocations
+    events:
+      - sqs:
+          arn: !GetAtt PushNotificationQueue.Arn
+          batchSize: 10
+          maximumBatchingWindowInSeconds: 5
+      - schedule:
+          rate: rate(6 hours)
+          name: ${self:service}-${self:provider.stage}-maintenance
+          description: Periodic maintenance and retry of failed notifications
+          enabled: true
+      - http:
+          path: /push-notifications/process
+          method: POST
+          cors: true
+          authorizer:
+            name: apiKeyAuthorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+      - http:
+          path: /push-notifications/status
+          method: GET
+          cors: true
+          authorizer:
+            name: apiKeyAuthorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+
+resources:
+  Resources:
+    PushNotificationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-notifications
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+PushNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-${self:provider.stage}-notifications
+        DisplayName: Push Notification Topic
+        Tags:
+          - Key: Service
+            Value: ${self:service}
+          - Key: Stage
+            Value: ${self:provider.stage}
+
+    PushNotificationQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-queue
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 86400
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt PushNotificationDeadLetterQueue.arn
+          maxReceiveCount: 3
+        Tags:
+          - Key: Service
+            Value: ${self:service}
+          - Key: Stage
+            Value: ${self:provider.stage}
+
+    PushNotificationDeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-dlq
+        MessageRetentionPeriod: 1209600
+        Tags:
+          - Key: Service
+            Value: ${self:service}
+          - Key: Stage
+            Value: ${self:provider.stage}
+
+    PushNotificationQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref PushNotificationQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt PushNotificationQueue.arn
+              Condition:
+                ArnEquals:
+                  'aws:SourceArn': !Ref PushNotificationTopic
+
+    PushNotificationSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref PushNotificationTopic
+        Protocol: sqs
+        Endpoint: !GetAtt PushNotificationQueue.arn
+        RawMessageDelivery: false
+
+  Outputs:
+    PushNotificationsTableArn:
+      Description: DynamoDB table ARN for push notifications state
+      Value: !GetAtt PushNotificationsTable.arn
+      Export:
+        Name: ${self:service}-${self:provider.stage}-table-arn
+    PushNotificationTopicArn:
+      Description: SNS topic ARN for push notification fan-out
+      Value: !Ref PushNotificationTopic
+      Export:
+        Name: ${self:service}-${self:provider.stage}-topic-arn
+    PushNotificationQueueArn:
+      Description: SQS queue ARN for notification processing
+      Value: !GetAtt PushNotificationQueue.arn
+      Export:
+        Name: ${self:service}-${self:provider.stage}-queue-arn
+    LambdaFunctionArn:
+      Description: Push notification processor Lambda function ARN
+      Value: !GetAtt PushNotificationsProcessorLambdaFunction.arn
+      Export:
+        Name: ${self:service}-${self:provider.stage}-lambda-arn
+          AttributeName: ttl
+          Enabled: true
+        Tags:
+          - Key: Service
+            Value: ${self:service}
+          - Key: Stage
+            Value: ${self:provider.stage}

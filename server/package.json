@@ -23,6 +23,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.998.0",
     "@aws-sdk/client-ses": "^3.999.0",
+    "@aws-sdk/client-sns": "^3.998.0",
+    "@aws-sdk/lib-dynamodb": "^3.998.0",
     "@aws-sdk/s3-request-presigner": "^3.998.0",
     "@graphql-tools/schema": "^10.0.31",
     "@sentry/node": "^8.55.0",
