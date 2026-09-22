@@ -41,6 +41,10 @@ let GENERAL_INFO = {
     },
   ],
   authMode: 'web2', // Options: 'web2' (email/password) or 'web3' (wallet)
+  cdn: {
+    url: '', // CDN base URL for serving static assets (e.g. https://cdn.example.com)
+    authAssetsUrl: '', // CDN URL specifically for auth page assets (overrides cdn.url when set)
+  },
 }
 
 module.exports = GENERAL_INFO
