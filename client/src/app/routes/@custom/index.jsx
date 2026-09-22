@@ -7,13 +7,8 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import { lazy } from 'react'
-import { ProtectedRoute } from '../../components/@system/ProtectedRoute'
-
-const HealthCheckPage = lazy(() =>
-  import(/* webpackChunkName: "pages-health-check" */ '../../pages/app/@custom/HealthCheckPage').then((m) => ({ default: m.HealthCheckPage }))
-)
+import { SearchTestingGuide } from '../pages/app/@custom/SearchTestingGuide'
 
 export const customRoutes = [
-  { path: '/app/health-check', element: <ProtectedRoute><HealthCheckPage /></ProtectedRoute> },
+  { path: '/app/search-testing-guide', element: <SearchTestingGuide /> },
 ]
