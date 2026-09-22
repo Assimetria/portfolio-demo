@@ -10,16 +10,8 @@
 // export const updateItem = (id, data) => api.put(`/items/${id}`, data)
 // export const deleteItem = (id) => api.delete(`/items/${id}`)
 
-// ── API Gateway Guide ─────────────────────────────────────────────────────────
-export const getApiGatewayGuide = () => fetch('/api/api-gateway-guide').then((r) => r.json())
-export const markGuideStepComplete = (stepId) =>
-  fetch('/api/api-gateway-guide/progress', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ stepId }),
-  }).then((r) => r.json())
-export const resetGuideProgress = () =>
-  fetch('/api/api-gateway-guide/reset', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  }).then((r) => r.json())
+import { api } from '../../lib/@system/api'
+
+export const getSearchTestConfig = () => api.get('/search-test')
+export const getWebhookBenchmark = (params) => api.get('/webhook-benchmark', { params })
+export const runSearchTest = (params) => api.post('/search-test/run', params)
