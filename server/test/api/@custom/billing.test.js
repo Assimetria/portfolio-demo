@@ -1,5 +1,13 @@
 /**
- * API tests for GET /api/billing (@custom)
+ * API tests for billing endpoints (@custom)
+ * Tests for:
+ *   GET    /api/billing           — existing billing summary
+ *   GET    /api/billing/items     — list billing items
+ *   POST   /api/billing/items     — create billing item
+ *   PUT    /api/billing/items/:id — update billing item
+ *   DELETE /api/billing/items/:id — delete billing item
+ *   POST   /api/billing/items/undo — undo last action
+ *   POST   /api/billing/items/redo — redo last undone action
  *
  * External deps (DB, Redis, Email) are mocked.
  */
@@ -50,7 +58,7 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-describe('GET /api/billing', () => {
+describe('GET /api/billing (existing)', () => {
   it('returns 401 without authentication', async () => {
     const res = await request(app).get('/api/billing')
     expect(res.status).toBe(401)
@@ -63,7 +71,7 @@ describe('GET /api/billing', () => {
     expect(res.status).toBe(401)
   })
 
-  it('returns 401 with a random 96-hex opaque token (unknown session)', async () => {
+  it('returns 401 with a random 96-hex opaque token', async () => {
     const fakeToken = crypto.randomBytes(48).toString('hex')
     const res = await request(app)
       .get('/api/billing')
@@ -80,6 +88,85 @@ describe('GET /api/billing', () => {
 
   it('returns JSON on unauthorized', async () => {
     const res = await request(app).get('/api/billing')
+    expect(res.headers['content-type']).toMatch(/application\/json/)
+  })
+})
+
+describe('GET /api/billing/items', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app).get('/api/billing/items')
+    expect(res.status).toBe(401)
+  })
+
+  it('returns JSON on unauthorized', async () => {
+    const res = await request(app).get('/api/billing/items')
+    expect(res.headers['content-type']).toMatch(/application\/json/)
+  })
+})
+
+describe('POST /api/billing/items', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app)
+      .post('/api/billing/items')
+      .send({ description: 'Test item', amount: 100 })
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 401 with invalid bearer token', async () => {
+    const res = await request(app)
+      .post('/api/billing/items')
+      .set('Authorization', 'Bearer invalid')
+      .send({ description: 'Test', amount: 50 })
+    expect(res.status).toBe(401)
+  })
+})
+
+describe('PUT /api/billing/items/:id', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app)
+      .put('/api/billing/items/1')
+      .send({ description: 'Updated' })
+    expect(res.status).toBe(401)
+  })
+
+  it('returns JSON on unauthorized', async () => {
+    const res = await request(app).put('/api/billing/items/1')
+    expect(res.headers['content-type']).toMatch(/application\/json/)
+  })
+})
+
+describe('DELETE /api/billing/items/:id', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app).delete('/api/billing/items/1')
+    expect(res.status).toBe(401)
+  })
+
+  it('returns JSON on unauthorized', async () => {
+    const res = await request(app).delete('/api/billing/items/1')
+    expect(res.headers['content-type']).toMatch(/application\/json/)
+  })
+})
+
+describe('POST /api/billing/items/undo', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app).post('/api/billing/items/undo')
+    expect(res.status).toBe(401)
+  })
+
+  it('returns JSON on unauthorized', async () => {
+    const res = await request(app).post('/api/billing/items/undo')
+    expect(res.headers['content-type']).toMatch(/application\/json/)
+  })
+})
+
+describe('POST /api/billing/items/redo', () => {
+  it('returns 401 without authentication', async () => {
+    const res = await request(app).post('/api/billing/items/redo')
+    expect(res.status).toBe(401)
+  })
+
+  it('returns JSON on unauthorized', async () => {
+    const res = await request(app).post('/api/billing/items/redo')
     expect(res.headers['content-type']).toMatch(/application\/json/)
   })
 })
