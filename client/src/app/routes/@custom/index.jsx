@@ -7,8 +7,11 @@
 // pages/static/@custom/LandingPage/index.jsx.
 //
 // Add product-specific route overrides below:
-import { SearchTestingGuide } from '../pages/app/@custom/SearchTestingGuide'
+import FAQPage from '../pages/static/@custom/FAQPage'
 
 export const customRoutes = [
-  { path: '/app/search-testing-guide', element: <SearchTestingGuide /> },
+  {
+    path: '/faq',
+    element: <FAQPage />,
+  },
 ]
