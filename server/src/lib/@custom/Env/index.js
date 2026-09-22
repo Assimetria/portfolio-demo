@@ -35,6 +35,8 @@ const OPTIONAL_VARS = [
     description: 'CSRF token signing secret — a random one is generated at startup if missing',
     minLength: 32,
   },
+  { key: 'CDN_URL', description: 'Base CDN URL for serving public static assets (e.g. https://cdn.example.com)' },
+  { key: 'AUTH_CDN_URL', description: 'CDN URL specifically for auth page assets. Overrides CDN_URL for auth pages.' },
 ]
 
 function validate() {

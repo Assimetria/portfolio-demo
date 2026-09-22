@@ -3,9 +3,18 @@
 // This file is NEVER overwritten during template sync.
 //
 // Example:
-// import { api } from '../../lib/@system/api.js'
-//
-// export const getItems = () => api.get('/items')
-// export const createItem = (data) => api.post('/items', data)
-// export const updateItem = (id, data) => api.put(`/items/${id}`, data)
-// export const deleteItem = (id) => api.delete(`/items/${id}`)
+import { api } from '../../lib/@system/api.js'
+
+// ── Billing Editor API ─────────────────────────────────────────────────────
+
+export const getBillingItems = () => api.get('/billing/items')
+
+export const createBillingItem = (data) => api.post('/billing/items', data)
+
+export const updateBillingItem = (id, data) => api.put(`/billing/items/${id}`, data)
+
+export const deleteBillingItem = (id) => api.delete(`/billing/items/${id}`)
+
+export const undoBillingAction = () => api.post('/billing/items/undo', {})
+
+export const redoBillingAction = () => api.post('/billing/items/redo', {})

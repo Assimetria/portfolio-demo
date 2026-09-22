@@ -29,6 +29,19 @@ const chromiumArgs = process.env.E2E_ALLOW_EXTERNAL
   ? []
   : [`--host-resolver-rules=${EXTERNAL_HOSTS.map((h) => `MAP ${h} ~NOTFOUND`).join(', ')}`]
 
+// CDN host resolver rules — when CDN_URL or AUTH_CDN_URL is set in the e2e
+// environment, blocklist them too so CI does not reach out to the real CDN.
+const CDN_HOSTS = []
+if (process.env.CDN_URL) {
+  try { CDN_HOSTS.push(new URL(process.env.CDN_URL).hostname) } catch (_) { /* skip */ }
+}
+if (process.env.AUTH_CDN_URL) {
+  try { CDN_HOSTS.push(new URL(process.env.AUTH_CDN_URL).hostname) } catch (_) { /* skip */ }
+}
+if (CDN_HOSTS.length > 0 && !process.env.E2E_ALLOW_EXTERNAL) {
+  chromiumArgs.push(...CDN_HOSTS.map((h) => `MAP ${h} ~NOTFOUND`))
+}
+
 const projects = [
   { name: 'chromium', use: { ...devices['Desktop Chrome'], launchOptions: { args: chromiumArgs } } },
 ]
