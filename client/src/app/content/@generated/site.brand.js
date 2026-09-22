@@ -4,12 +4,16 @@
 // Layer 2 of 3 in client/src/config/index.js (lowest → highest precedence):
 //   content/@system/site.js  →  THIS FILE  →  content/@custom/site.js
 // Objects merge per key, arrays replace, unset keys fall through (scripts/lib/site-brand.cjs).
-// Company: Informational Template
+// Company: Creative Portfolio
 
 export default {
   "locale": "en",
   "nav": {
     "links": [
+      {
+        "label": "Work",
+        "href": "#work"
+      },
       {
         "label": "About",
         "href": "#about"
@@ -19,39 +23,36 @@ export default {
         "href": "#services"
       },
       {
-        "label": "Team",
-        "href": "#team"
-      },
-      {
-        "label": "Testimonials",
-        "href": "#testimonials"
-      },
-      {
         "label": "Contact",
         "href": "#contact"
       }
     ]
   },
   "contact": {
-    "phone": "+351 210 000 000",
+    "phone": "+1 000 000 0000",
     "address": {
       "lines": [
-        "Rua do Norte 42, 3º",
-        "1200-286 Lisboa",
-        "Portugal"
+        "123 Creative Ave",
+        "10001 New York",
+        "NY",
+        "United States"
       ],
-      "street": "Rua do Norte 42, 3º",
-      "postalCode": "1200-286",
-      "city": "Lisboa",
-      "country": "Portugal"
+      "street": "123 Creative Ave",
+      "postalCode": "10001",
+      "city": "New York",
+      "region": "NY",
+      "country": "United States"
     },
     "hours": [
-      "Monday – Friday, 09:00 – 18:00 WET",
+      "Monday – Friday, 09:00 – 18:00 EST",
       "Closed on public holidays"
     ],
     "openingHours": [
       "Mo-Fr 09:00-18:00"
     ]
+  },
+  "footer": {
+    "tagline": "Let's create something amazing together"
   },
   "seo": {
     "titleTemplate": "{name} - {tagline}",

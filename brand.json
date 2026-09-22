@@ -1,11 +1,11 @@
 {
-  "companyName": "Informational Template",
-  "slug": "product-template-informational",
-  "tagline": "A complete website for businesses that need to be found, trusted and contacted",
-  "description": "Informational website template for VC firms, professional services, restaurants, trades and portfolios: hero, about, services, team, testimonials, contact form with admin inbox, and an API-key-free map embed. Built on the same authenticated Express + React foundation as the SaaS template, so auth, admin and legal pages are already there.",
-  "templateType": "informational",
-  "primaryColor": "#64748B",
-  "accentColor": "#94A3B8",
+  "companyName": "Creative Portfolio",
+  "slug": "portfolio-demo",
+  "tagline": "A showcase of creative work — design, art, and digital experiences",
+  "description": "Creative Portfolio template for designers, artists, photographers, and creative professionals: project gallery, about, services, testimonials, contact form with admin inbox. Built on the same authenticated Express + React foundation as the SaaS template, so auth, admin and legal pages are already there.",
+  "templateType": "portfolio",
+  "primaryColor": "#8B5CF6",
+  "accentColor": "#F59E0B",
   "headingFont": "Inter",
   "bodyFont": "Inter",
   "monoFont": "JetBrains Mono",
@@ -14,15 +14,19 @@
     "heading": "Inter",
     "mono": "JetBrains Mono"
   },
-  "iconColor": "#64748B",
+  "iconColor": "#8B5CF6",
+  "colors": {
+    "primary": "#8B5CF6",
+    "accent": "#F59E0B"
+  },
   "iconLibrary": "lucide-react",
   "uiLibrary": "shadcn/ui",
-  "toneOfVoice": "clear, warm, professional",
-  "brandVoice": "trustworthy, direct, service-minded",
-  "targetAudience": "Small and medium businesses that need a credible public website rather than a software product: consultancies, VC and law firms, restaurants, trades (plumbers, electricians), studios and personal portfolios.",
-  "differentiator": "One content file (content/@custom/site.js) drives the whole site: navigation, hero, about, services, team, testimonials, contact form and map. The contact form lands in an admin inbox with email notifications. Sites cloned from an existing URL drop straight into pages/@custom/imported/. Same authenticated Express + React foundation as the SaaS template, so upstream fixes sync downstream.",
+  "toneOfVoice": "inspiring, warm, professional, creative",
+  "brandVoice": "creative, confident, authentic",
+  "targetAudience": "Creative professionals who need an elegant portfolio website: designers, artists, photographers, illustrators, architects, studios, and creative agencies.",
+  "differentiator": "One content file (content/@custom/site.js) drives the whole site: navigation, hero, project gallery, about, services, team, testimonials, contact form. The contact form lands in an admin inbox with email notifications. Same authenticated Express + React foundation as the SaaS template, so upstream fixes sync downstream.",
   "customDomainConfigured": false,
-  "defaultTheme": "light",
+  "defaultTheme": "dark",
   "competitorSource": "",
   "logoPath": "assets/logos/logo.svg",
   "faviconPath": "assets/favicons/favicon.svg",
@@ -71,23 +75,22 @@
   "site": {
     "locale": "en",
     "nav": [
+      { "label": "Work", "href": "#work" },
       { "label": "About", "href": "#about" },
       { "label": "Services", "href": "#services" },
-      { "label": "Team", "href": "#team" },
-      { "label": "Testimonials", "href": "#testimonials" },
       { "label": "Contact", "href": "#contact" }
     ],
     "contact": {
       "email": "",
-      "phone": "+351 210 000 000",
+      "phone": "+1 000 000 0000",
       "address": {
-        "street": "Rua do Norte 42, 3º",
-        "postalCode": "1200-286",
-        "city": "Lisboa",
-        "region": "",
-        "country": "Portugal"
+        "street": "123 Creative Ave",
+        "postalCode": "10001",
+        "city": "New York",
+        "region": "NY",
+        "country": "United States"
       },
-      "hours": ["Monday – Friday, 09:00 – 18:00 WET", "Closed on public holidays"],
+      "hours": ["Monday – Friday, 09:00 – 18:00 EST", "Closed on public holidays"],
       "openingHours": ["Mo-Fr 09:00-18:00"],
       "turnstile": { "siteKey": "" }
     },
@@ -101,7 +104,7 @@
       "email": ""
     },
     "footer": {
-      "tagline": "",
+      "tagline": "Let's create something amazing together",
       "copyright": ""
     },
     "seo": {
