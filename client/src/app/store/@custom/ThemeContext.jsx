@@ -8,6 +8,11 @@
 // <html data-theme="light|dark"> — the switch Tailwind and brand.css key off —
 // and mirrored to the legacy `.dark` class. lib/@system/brandPrePaint.js applies
 // the same contract before first paint; this provider takes over after hydration.
+//
+// Server sync: when an authenticated session exists, theme changes are persisted
+// to PATCH /api/users/me/preferences so the same preference follows the user
+// across browsers and devices. localStorage remains the source of truth for
+// unauthenticated visitors and as the immediate (optimistic) persistence layer.
 
 import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { info } from '@/config'
@@ -18,6 +23,7 @@ import {
   writeStoredTheme,
   applyResolvedTheme,
 } from '@/app/lib/@system/themeDom'
+import { api } from '@/app/lib/@system/api'
 
 export const ThemeContext = createContext(null)
 
@@ -31,9 +37,49 @@ export const getInitialTheme = () => {
 
 export const getSystemTheme = () => readSystemTheme()
 
+/**
+ * Try to restore the theme preference from the server (authenticated users).
+ * Returns the server theme value or null if the request fails (not authed, etc.).
+ * This is best-effort — localStorage is always the fallback.
+ */
+async function fetchServerTheme() {
+  try {
+    const data = await api.get('/users/me/preferences')
+    const serverTheme = data?.preferences?.theme
+    if (VALID_THEMES.includes(serverTheme)) {
+      return serverTheme
+    }
+  } catch {
+    // Not authenticated or server unreachable — localStorage fallback
+  }
+  return null
+}
+
+/** Persist the theme to the server (best effort, silent on failure). */
+async function saveThemeToServer(theme) {
+  try {
+    await api.patch('/users/me/preferences', { theme })
+  } catch {
+    // Not authenticated or server unreachable — localStorage is sufficient
+  }
+}
+
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getInitialTheme)
   const [systemDark, setSystemDark] = useState(() => readSystemTheme() === 'dark')
+
+  // On mount, try to restore theme from server. If the server has a stored
+  // preference, use it (and persist to localStorage for faster future loads).
+  // Otherwise keep the localStorage / brand.json default already loaded.
+  useEffect(() => {
+    let cancelled = false
+    fetchServerTheme().then((serverTheme) => {
+      if (cancelled || !serverTheme) return
+      setThemeState(serverTheme)
+      writeStoredTheme(serverTheme)
+    })
+    return () => { cancelled = true }
+  }, [])
 
   // Track OS colour-scheme so "system" stays responsive to live changes.
   useEffect(() => {
@@ -59,6 +105,8 @@ export function ThemeProvider({ children }) {
     if (!VALID_THEMES.includes(nextTheme)) return
     setThemeState(nextTheme)
     writeStoredTheme(nextTheme)
+    // Persist to server as well (silent, best-effort)
+    saveThemeToServer(nextTheme)
   }, [])
 
   const resolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
