@@ -1,0 +1,73 @@
+/* @custom — Product-specific style overrides. NEVER overwritten during template sync. */
+
+/* ─────────────────────────────────────────────────────────────
+   Tailwind dark-mode class conflict fixes (task-276523)
+
+   Some @system components pair hardcoded palette classes
+   (e.g. `bg-gray-100` + `dark:bg-gray-800`) alongside the brand
+   CSS-variable system (`bg-muted`, `bg-background`, …). Because
+   `darkMode: 'class'` is active on <html>, both selectors match
+   in dark mode and Tailwind's utility layer emits them in class
+   order — meaning the hardcoded palette wins, defeating brand
+   theming and producing visible mismatches against tokenised
+   siblings (cards, panels, borders).
+
+   These overrides remap the specific hardcoded palette classes
+   that appear in @system pages/components to the equivalent
+   brand CSS variables so the entire UI respects the active
+   theme consistently. Scoped to `html[data-theme="dark"]` (the theme
+   switch — see lib/@system/themeDom.js) with `html.dark` kept as a
+   compatibility alias, so light-mode rendering is unchanged. Uses `!important` to defeat the
+   Tailwind utility specificity tie.
+   ───────────────────────────────────────────────────────────── */
+
+html[data-theme="dark"] .dark\:bg-gray-800,
+html.dark .dark\:bg-gray-800,
+html[data-theme="dark"] .dark\:bg-gray-900,
+html.dark .dark\:bg-gray-900,
+html[data-theme="dark"] .dark\:bg-gray-950,
+html.dark .dark\:bg-gray-950,
+html[data-theme="dark"] .dark\:bg-zinc-800,
+html.dark .dark\:bg-zinc-800,
+html[data-theme="dark"] .dark\:bg-zinc-900,
+html.dark .dark\:bg-zinc-900,
+html[data-theme="dark"] .dark\:bg-zinc-950,
+html.dark .dark\:bg-zinc-950,
+html[data-theme="dark"] .dark\:bg-slate-800,
+html.dark .dark\:bg-slate-800,
+html[data-theme="dark"] .dark\:bg-slate-900,
+html.dark .dark\:bg-slate-900,
+html[data-theme="dark"] .dark\:bg-slate-950,
+html.dark .dark\:bg-slate-950 {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html[data-theme="dark"] .dark\:text-gray-300,
+html.dark .dark\:text-gray-300,
+html[data-theme="dark"] .dark\:text-gray-400,
+html.dark .dark\:text-gray-400,
+html[data-theme="dark"] .dark\:text-zinc-300,
+html.dark .dark\:text-zinc-300,
+html[data-theme="dark"] .dark\:text-zinc-400,
+html.dark .dark\:text-zinc-400,
+html[data-theme="dark"] .dark\:text-slate-300,
+html.dark .dark\:text-slate-300,
+html[data-theme="dark"] .dark\:text-slate-400,
+html.dark .dark\:text-slate-400 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+html[data-theme="dark"] .dark\:border-gray-700,
+html.dark .dark\:border-gray-700,
+html[data-theme="dark"] .dark\:border-gray-800,
+html.dark .dark\:border-gray-800,
+html[data-theme="dark"] .dark\:border-zinc-700,
+html.dark .dark\:border-zinc-700,
+html[data-theme="dark"] .dark\:border-zinc-800,
+html.dark .dark\:border-zinc-800,
+html[data-theme="dark"] .dark\:border-slate-700,
+html.dark .dark\:border-slate-700,
+html[data-theme="dark"] .dark\:border-slate-800,
+html.dark .dark\:border-slate-800 {
+  border-color: hsl(var(--border)) !important;
+}

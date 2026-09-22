@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Textarea snapshot renders default textarea 1`] = `
+<textarea
+  class="flex min-h-[80px] w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+/>
+`;
+
+exports[`Textarea snapshot renders disabled 1`] = `
+<textarea
+  class="flex min-h-[80px] w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  disabled=""
+>
+  locked
+</textarea>
+`;
+
+exports[`Textarea snapshot renders with custom rows and className 1`] = `
+<textarea
+  class="flex w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px]"
+  rows="6"
+/>
+`;
+
+exports[`Textarea snapshot renders with placeholder 1`] = `
+<textarea
+  class="flex min-h-[80px] w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  placeholder="Tell us more..."
+/>
+`;

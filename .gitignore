@@ -1,0 +1,52 @@
+node_modules/
+dist/
+client/dist/
+build/
+*.local
+
+# Environment files — never commit real secrets
+.env
+.env.local
+.env.*.local
+server/.env
+server/.env.local
+server/.env.*.local
+client/.env
+client/.env.local
+client/.env.*.local
+
+*.log
+.DS_Store
+.vscode/
+coverage/
+
+# Cryptographic key files — generated locally, never commit
+# RSA private key is stored here by npm run generate-keys
+server/.keys/
+.keys/
+*.pem
+*.key
+*_private.pem
+*_private.key
+
+# Database backups
+backups/*.dump
+backups/*.dump.gz
+*.backup-insecure
+
+# Generated test artifacts
+playwright-report/
+test-results/
+
+# Agent task artifacts — auto-generated, never commit
+.task-*
+*VERIFICATION*
+*completion-report*
+*db-update.json
+*summary-for-frederico*
+
+# Product repos should keep brand assets in /assets/ (logos, favicons, og)
+# The canonical template tracks its own brands/product-template/ as reference
+brands/*
+!brands/product-template/
+backend/public/brands/

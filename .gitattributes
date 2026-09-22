@@ -1,0 +1,30 @@
+# @custom files — ALWAYS keep our version on merge
+# These are product-specific overrides that should never be auto-merged from template.
+# Using merge=ours ensures git merge upstream/dev -X ours is enforced at the file level.
+**/@custom/** merge=ours
+server/@custom/** merge=ours
+client/@custom/** merge=ours
+*/src/**/@custom/** merge=ours
+*/app/**/@custom/** merge=ours
+
+# @system files — should be synced wholesale, but if conflicts occur, diff3 is helpful
+**/@system/** merge=diff3
+
+# Auto-generated barrel files — use union merge to prevent conflicts when multiple
+# branches each add a new component and regenerate the barrel independently.
+# The union driver takes all unique lines from both sides, which is correct for
+# files consisting entirely of `export * from './X'` lines.
+# NOTE: more-specific patterns override the **/@system/** rule above (last-match wins).
+client/src/app/components/@system/index.js merge=union
+client/src/app/hooks/@system/index.js merge=union
+client/src/app/store/@system/index.js merge=union
+client/src/app/lib/@system/index.js merge=union
+client/src/app/routes/@system/AppRoutes.jsx merge=union
+server/src/routes/@system/index.js merge=union
+
+# Prevent CRLF/LF issues
+* text=auto
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.sh text eol=lf

@@ -1,0 +1,238 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI — the merge gate for every product built from this template.
+#
+# Runs on pushes and pull requests to `main` AND `dev`. Orkosi provisioning
+# creates every customer repo with `dev` as the default branch, so day-to-day
+# work (feat/* → dev PRs, direct pushes to dev) must be gated here too — a
+# `main`-only trigger gave those branches zero CI. `main` is additionally
+# protected with the required status check named `ci` (strict) — the aggregate
+# job at the bottom of this file. Deploy (.github/workflows/deploy.yml) only
+# runs after this workflow succeeds on `main`; CI completions on `dev` are
+# filtered out there by `workflow_run.branches` + the preflight `if`.
+#
+# Jobs run in parallel; every failure is fatal (no `|| echo` swallowing).
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22
+  FORCE_COLOR: 1
+  CI: true
+
+jobs:
+  # ── Lint (ESLint errors fail; warnings are reported) ────────────────────────
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: ESLint
+        working-directory: client
+        run: npm run lint
+
+  # ── Client unit tests (Jest + Testing Library) ──────────────────────────────
+  client-tests:
+    name: client-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Jest
+        working-directory: client
+        run: npm test -- --ci
+
+  # ── Server tests (Jest + supertest, DB mocked) ──────────────────────────────
+  server-tests:
+    name: server-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Jest
+        working-directory: server
+        run: npm test -- --ci --forceExit
+
+  # ── Production build (prebuild: brand → CSS/JS + barrels; then Webpack) ─────
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+      - name: Install root + client dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund --prefix client
+      - name: Chromium for the SEO prerender (client/scripts/prerender.mjs)
+        run: npx playwright install --with-deps chromium
+      - name: Build (npm run build → prebuild + webpack + prerender + verify-build)
+        run: npm run build
+      - name: Docs links resolve (npm run docs:check)
+        run: npm run docs:check
+      - name: Build summary
+        run: |
+          {
+            echo "### Client build"
+            echo '```'
+            du -sh client/dist
+            ls client/dist/js | head -20
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Docker smoke: build the production image, boot it without a database ───
+  # The container must come up degraded (db: disconnected), answer the liveness
+  # endpoint /api/health with HTTP 200, answer the readiness endpoint /api/ready
+  # with HTTP 503, and serve the SPA — exactly what App Runner sees while the
+  # database is still being provisioned.
+  docker:
+    name: docker-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build metadata
+        id: meta
+        run: echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: product-template:ci
+          build-args: |
+            BUILD_SHA=${{ github.sha }}
+            BUILD_DATE=${{ steps.meta.outputs.date }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+      - name: Smoke test (degraded boot, /api/health 200, /api/ready 503, SPA served)
+        run: bash scripts/ci/docker-smoke.sh product-template:ci
+
+  # ── Template contract: VERSION == manifest == package.json == CHANGELOG; brand.json valid ──
+  contract:
+    name: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Version files agree (scripts/@system/version.js --check)
+        run: node scripts/@system/version.js --check
+      - name: brand.json is valid (scripts/apply-brand.js --check)
+        run: node scripts/apply-brand.js --check
+
+  # ── Dependency audit ────────────────────────────────────────────────────────
+  # Blocking: a CRITICAL advisory in the production dependency tree of the
+  # server or the client fails the gate. Report-only (continue-on-error): the
+  # full tree at HIGH, so the summary shows what Dependabot still has to land
+  # (.github/dependabot.yml) without turning transitive dev-tooling advisories
+  # into a red merge gate.
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Server — production deps, critical (blocking)
+        working-directory: server
+        run: npm audit --omit=dev --audit-level=critical
+      - name: Client — production deps, critical (blocking)
+        working-directory: client
+        run: npm audit --omit=dev --audit-level=critical
+      - name: Server — full tree, high (report only)
+        working-directory: server
+        continue-on-error: true
+        run: |
+          {
+            echo "### npm audit — server (all deps, high+)"
+            echo '```'
+            npm audit --audit-level=high 2>&1 | tail -40 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          npm audit --audit-level=high
+      - name: Client — full tree, high (report only)
+        working-directory: client
+        continue-on-error: true
+        run: |
+          {
+            echo "### npm audit — client (all deps, high+)"
+            echo '```'
+            npm audit --audit-level=high 2>&1 | tail -40 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          npm audit --audit-level=high
+
+
+  # ── Aggregate gate — the required status check `ci` on protected main ───────
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [lint, client-tests, server-tests, build, docker, contract, audit]
+    if: always()
+    steps:
+      - name: Verify every job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          if echo "$RESULTS" | grep -Eq '"result": *"(failure|cancelled|skipped)"'; then
+            echo "::error::One or more CI jobs did not succeed"
+            exit 1
+          fi
+          echo "All CI jobs succeeded"

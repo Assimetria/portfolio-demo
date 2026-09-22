@@ -1,0 +1,42 @@
+/* Reference cloner stylesheet — what lands in styles/@custom/imported/site.css.
+   Written for a whole document; client/postcss/scope-imported.cjs confines every
+   selector to [data-imported-root] at build time. */
+@font-face {
+  font-family: 'Casa';
+  src: url('/imported/assets/casa.woff2') format('woff2');
+}
+
+:root {
+  --casa-red: #a3261d;
+}
+
+body {
+  margin: 0;
+  font-family: 'Casa', Georgia, serif;
+  background: #fffaf3;
+}
+
+h1 {
+  font-size: 3rem;
+  color: var(--casa-red);
+}
+
+.hero,
+.menu {
+  padding: 4rem 2rem;
+}
+
+.hero .cta:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding: 6rem 4rem;
+  }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

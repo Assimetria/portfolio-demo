@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Dependabot — dependency surveillance for every product built from this template
+#
+# Three npm trees (root = tooling/Playwright, client = React/Webpack, server =
+# Express API), GitHub Actions, and the Docker base image. Weekly, batched:
+# minor + patch bumps arrive as one PR per tree so `dev` is not flooded, majors
+# come as individual PRs. Security advisories still open PRs immediately
+# regardless of the schedule.
+#
+# PRs target `dev` — the default branch of every customer repo — so they get CI
+# (ci.yml runs on dev) and ride the normal dev → main release cut.
+#
+# The Docker base image (`node:22-alpine`) is intentionally a tag, not a
+# digest: digests rot without automation; this ecosystem is that automation.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 2
+
+updates:
+  # ── npm: root (Playwright, concurrently, build tooling) ──────────────────────
+  - package-ecosystem: npm
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Lisbon
+    open-pull-requests-limit: 5
+    labels: [dependencies, root]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      root-minor-patch:
+        update-types: [minor, patch]
+
+  # ── npm: client (React 18, Webpack 5, Jest) ─────────────────────────────────
+  - package-ecosystem: npm
+    directory: /client
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Lisbon
+    open-pull-requests-limit: 5
+    labels: [dependencies, client]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      client-minor-patch:
+        update-types: [minor, patch]
+
+  # ── npm: server (Express, pg-promise, AWS SDK) ──────────────────────────────
+  - package-ecosystem: npm
+    directory: /server
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Lisbon
+    open-pull-requests-limit: 5
+    labels: [dependencies, server]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      server-minor-patch:
+        update-types: [minor, patch]
+
+  # ── GitHub Actions (actions/checkout, setup-node, docker/*, aws-actions/*) ─
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Lisbon
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # ── Docker base image (Dockerfile FROM node:${NODE_VERSION}-alpine) ─────────
+  - package-ecosystem: docker
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Lisbon
+    labels: [dependencies, docker]
+    commit-message:
+      prefix: "build(deps)"

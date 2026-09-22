@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Local development — databases only.
+#
+#  Runs PostgreSQL + Redis in Docker; run the app natively with hot reload:
+#    docker compose -f docker-compose.local.yml up -d
+#    npm run dev                          # server :3001 + client :3000
+#
+#  server/.env should point at these (server/.env.example already does):
+#    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/product_template_dev
+#    REDIS_URL=redis://localhost:6379
+#
+#  The database name product_template_dev is shared with server/.env.example,
+#  scripts/@system/dev/run-db-local.sh, the PostgreSQL localhost fallback and
+#  docs/DEVELOPMENT.md — one local dev database name, wherever you start it.
+#  Override with DB_NAME=... if you must. (docker-compose.yml — the full
+#  production-like stack — uses its own shop_template database.)
+#
+#  For the full production-like container stack use docker-compose.yml instead.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: product-template-dev
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-product_template_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-product_template_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata_local:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata_local:
+  redisdata_local:

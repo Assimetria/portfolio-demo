@@ -1,0 +1,73 @@
+# Root .dockerignore — keep the build context small and dev artefacts out of the image.
+# The Dockerfile copies: brand.json, assets/, scripts/, client/, server/{package*.json,src,scripts},
+# .config/, VERSION, start.sh. Everything else is noise for the build.
+
+# VCS / editors / OS
+.git
+.gitignore
+.gitattributes
+.github
+**/.DS_Store
+**/.vscode
+**/.idea
+**/*.swp
+
+# Dependencies and build outputs (rebuilt inside the image)
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.nyc_output
+**/*.log
+**/*.tsbuildinfo
+
+# Secrets and local env — never in an image layer
+.env
+.env.*
+**/.env
+**/.env.*
+**/.keys
+**/*.pem
+**/*.key
+
+# Docs
+*.md
+**/*.md
+docs
+
+# Tests, QA and E2E (not shipped)
+**/test
+**/tests
+**/__tests__
+**/*.test.js
+**/*.test.jsx
+**/*.spec.js
+client/src/test
+e2e
+playwright.config.js
+playwright-report
+test-results
+
+# CI/CD, compose and tooling that runs outside the container
+buildspec*.yml
+docker-compose*.yml
+Dockerfile
+.dockerignore
+scripts/ci
+scripts/e2e-server.js
+scripts/*.sh
+scripts/@system/ci
+scripts/@system/dev
+scripts/@system/hooks
+scripts/@system/*.sh
+
+# Server files the image does not need
+server/test
+server/.eslintrc*
+server/jest.config.*
+
+# Client duplicates / config not used by webpack.config.mjs
+client/webpack.config.js
+client/tailwind.config.js
+client/jest.config.js
+client/eslint.config.mjs

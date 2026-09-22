@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <!-- Assimetria wordmark-white: white logo-mark + white "Assimetria" text (for dark backgrounds) -->
+  <defs>
+    <clipPath id="wm-circle"><circle cx="90" cy="100" r="84"/></clipPath>
+  </defs>
+  <!-- Logo mark scaled to 180x180 area (center at 90,100, radius 84) -->
+  <circle cx="90" cy="100" r="84" fill="#ffffff"/>
+  <g clip-path="url(#wm-circle)">
+    <rect x="6" y="16" width="84" height="168" fill="#1a1a2e" rx="0"/>
+    <!-- Dissolving edge pixels (scaled: 8px blocks) -->
+    <rect x="90" y="21" width="8" height="8" fill="#1a1a2e" opacity="0.95"/>
+    <rect x="90" y="32" width="8" height="8" fill="#1a1a2e" opacity="0.92"/>
+    <rect x="90" y="43" width="8" height="8" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="90" y="55" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="66" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="77" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="88" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="100" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="111" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="122" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="133" width="8" height="8" fill="#1a1a2e"/>
+    <rect x="90" y="144" width="8" height="8" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="90" y="155" width="8" height="8" fill="#1a1a2e" opacity="0.85"/>
+    <rect x="90" y="167" width="8" height="8" fill="#1a1a2e" opacity="0.8"/>
+    <!-- Second column -->
+    <rect x="101" y="32" width="8" height="8" fill="#1a1a2e" opacity="0.8"/>
+    <rect x="101" y="43" width="8" height="8" fill="#1a1a2e" opacity="0.75"/>
+    <rect x="101" y="55" width="8" height="8" fill="#1a1a2e" opacity="0.85"/>
+    <rect x="101" y="66" width="8" height="8" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="101" y="77" width="8" height="8" fill="#1a1a2e" opacity="0.8"/>
+    <rect x="101" y="88" width="8" height="8" fill="#1a1a2e" opacity="0.85"/>
+    <rect x="101" y="100" width="8" height="8" fill="#1a1a2e" opacity="0.7"/>
+    <rect x="101" y="111" width="8" height="8" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="101" y="122" width="8" height="8" fill="#1a1a2e" opacity="0.8"/>
+    <rect x="101" y="133" width="8" height="8" fill="#1a1a2e" opacity="0.75"/>
+    <rect x="101" y="144" width="8" height="8" fill="#1a1a2e" opacity="0.7"/>
+    <rect x="101" y="155" width="8" height="8" fill="#1a1a2e" opacity="0.6"/>
+    <!-- Third column — sparser -->
+    <rect x="112" y="55" width="8" height="8" fill="#1a1a2e" opacity="0.6"/>
+    <rect x="112" y="66" width="8" height="8" fill="#1a1a2e" opacity="0.7"/>
+    <rect x="112" y="77" width="8" height="8" fill="#1a1a2e" opacity="0.5"/>
+    <rect x="112" y="100" width="8" height="8" fill="#1a1a2e" opacity="0.65"/>
+    <rect x="112" y="111" width="8" height="8" fill="#1a1a2e" opacity="0.55"/>
+    <rect x="112" y="122" width="8" height="8" fill="#1a1a2e" opacity="0.6"/>
+    <rect x="112" y="133" width="8" height="8" fill="#1a1a2e" opacity="0.5"/>
+    <!-- Fourth column — very sparse -->
+    <rect x="123" y="77" width="8" height="8" fill="#1a1a2e" opacity="0.45"/>
+    <rect x="123" y="88" width="8" height="8" fill="#1a1a2e" opacity="0.4"/>
+    <rect x="123" y="111" width="8" height="8" fill="#1a1a2e" opacity="0.35"/>
+    <rect x="123" y="122" width="8" height="8" fill="#1a1a2e" opacity="0.3"/>
+    <!-- Fifth column — barely visible -->
+    <rect x="134" y="88" width="8" height="8" fill="#1a1a2e" opacity="0.25"/>
+    <rect x="134" y="100" width="8" height="8" fill="#1a1a2e" opacity="0.2"/>
+    <rect x="134" y="111" width="8" height="8" fill="#1a1a2e" opacity="0.15"/>
+  </g>
+  <!-- Wordmark text — vertically centered with mark -->
+  <text x="200" y="110" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="600" fill="#ffffff" letter-spacing="-0.02em" dominantBaseline="central" textAnchor="start">Assimetria</text>
+</svg>

@@ -1,0 +1,30 @@
+{
+  "_comment": "Run: npm install --save-dev <packages below> to enable webpack build",
+  "devDependencies": {
+    "webpack": "^5.97.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "babel-loader": "^9.2.1",
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.26.0",
+    "style-loader": "^4.0.0",
+    "css-loader": "^7.1.2",
+    "postcss-loader": "^8.1.1",
+    "mini-css-extract-plugin": "^2.9.2",
+    "css-minimizer-webpack-plugin": "^7.0.0",
+    "terser-webpack-plugin": "^5.3.11",
+    "compression-webpack-plugin": "^11.1.0",
+    "html-webpack-plugin": "^5.6.3",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
+    "react-refresh": "^0.14.2"
+  },
+  "scripts": {
+    "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.mjs",
+    "build:webpack:analyze": "cross-env NODE_ENV=production ANALYZE=true webpack --config webpack.config.mjs",
+    "dev:webpack": "cross-env NODE_ENV=development webpack serve --config webpack.config.mjs"
+  }
+}

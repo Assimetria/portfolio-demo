@@ -1,0 +1,16 @@
+{
+  "presets": [["@babel/preset-env", { "targets": { "node": "20" } }]],
+  "plugins": [["module-resolver", {
+    "root": ["./src"],
+    "alias": {
+      "@api": "./src/api",
+      "@config": "./src/config",
+      "@db": "./src/db",
+      "@lib": "./src/lib",
+      "@routes": "./src/routes",
+      "@workers": "./src/workers",
+      "@scheduler": "./src/scheduler",
+      "@graphql": "./src/graphql"
+    }
+  }]]
+}

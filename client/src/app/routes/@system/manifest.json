@@ -1,0 +1,267 @@
+{
+  "_generatedBy": "generate-barrels.js",
+  "_note": "Override defaults by adding route.json in the page directory.",
+  "static": [
+    {
+      "path": "/",
+      "page": "LandingPage",
+      "section": "static",
+      "auth": false,
+      "source": "@custom"
+    },
+    {
+      "path": "/2fa/verify",
+      "page": "TwoFactorVerifyPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/about",
+      "page": "AboutPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/auth",
+      "page": "AuthPage",
+      "section": "static",
+      "auth": false,
+      "guest": true
+    },
+    {
+      "path": "/blog",
+      "page": "BlogPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/careers",
+      "page": "CareersPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/changelog",
+      "page": "ChangelogPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/roadmap",
+      "page": "RoadmapPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/blog/:slug",
+      "page": "BlogPostPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/contact",
+      "page": "ContactPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/cookies",
+      "page": "CookiePolicyPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/dpa",
+      "page": "DPAPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/docs",
+      "page": "DocsPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/error",
+      "page": "ErrorPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/forgot-password",
+      "page": "ForgotPasswordPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/help",
+      "page": "HelpCenterPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/help/:slug",
+      "page": "ArticlePage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/onboarding",
+      "page": "OnboardingPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/pricing",
+      "page": "PricingPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/privacy",
+      "page": "PrivacyPolicyPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/refund-policy",
+      "page": "RefundPolicyPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/reset-password",
+      "page": "ResetPasswordPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/terms",
+      "page": "TermsPage",
+      "section": "static",
+      "auth": false
+    },
+    {
+      "path": "/verify-email",
+      "page": "VerifyEmailPage",
+      "section": "static",
+      "auth": false
+    }
+  ],
+  "app": [
+    {
+      "path": "/app",
+      "page": "HomePage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/activity",
+      "page": "ActivityPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/admin",
+      "page": "AdminPage",
+      "section": "app",
+      "auth": true,
+      "role": "admin"
+    },
+    {
+      "path": "/app/admin/blog",
+      "page": "BlogManagementPage",
+      "section": "app",
+      "auth": true,
+      "role": "admin"
+    },
+    {
+      "path": "/app/api-keys",
+      "page": "ApiKeysPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/billing",
+      "page": "BillingPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/integrations",
+      "page": "IntegrationsPage",
+      "section": "app",
+      "auth": true,
+      "role": "admin"
+    },
+    {
+      "path": "/app/mobile-demo",
+      "page": "MobileResponsiveDemo",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/settings",
+      "page": "SettingsPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/teams",
+      "page": "TeamsPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/ux-demo",
+      "page": "UXDemoPage",
+      "section": "app",
+      "auth": true
+    },
+    {
+      "path": "/app/webhooks",
+      "page": "WebhooksPage",
+      "section": "app",
+      "auth": true
+    }
+  ],
+  "redirects": [
+    {
+      "from": "/login",
+      "to": "/auth"
+    },
+    {
+      "from": "/register",
+      "to": "/auth?tab=register"
+    },
+    {
+      "from": "/signup",
+      "to": "/auth?tab=register"
+    },
+    {
+      "from": "/dashboard",
+      "to": "/app"
+    },
+    {
+      "from": "/dashboard/*",
+      "to": "/app"
+    },
+    {
+      "from": "/cookie-policy",
+      "to": "/cookies"
+    },
+    {
+      "from": "/docs/*",
+      "to": "/help"
+    },
+    {
+      "from": "/features",
+      "to": "/#features"
+    }
+  ],
+  "catchAll": {
+    "page": "NotFoundPage",
+    "section": "static"
+  }
+}

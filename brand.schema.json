@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Assimetria/product-template/blob/main/brand.schema.json",
+  "title": "brand.json — product brand contract",
+  "description": "Single source of product identity for every app built from an Assimetria product template. Written by Orkosi onboarding/provisioning, editable by the product owner. scripts/apply-brand.js turns it into CSS tokens (colours, fonts, spacing, radius) and client/src/config/@custom/info.js on every build; changing this file changes the whole product. Unknown keys are allowed and preserved (the Orkosi brand engine adds modes, typography.scale, voice, positioning, logos). The same rules are enforced at build time by scripts/lib/brand-schema.cjs.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "companyName": { "type": "string", "description": "Product / company name shown in the UI, <title>, emails." },
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "URL-safe identifier (customer-<slug> repo, subdomain)." },
+    "tagline": { "type": "string" },
+    "description": { "type": "string" },
+    "url": { "type": "string" },
+    "supportEmail": { "type": "string" },
+
+    "primaryColor": { "$ref": "#/definitions/hex", "description": "Brand primary — buttons, links, focus rings. Foreground on it is computed for contrast." },
+    "accentColor": { "$ref": "#/definitions/hex", "description": "Secondary highlight colour." },
+    "iconColor": { "$ref": "#/definitions/hex" },
+    "backgroundColor": { "$ref": "#/definitions/hex", "description": "Optional override of the default-theme page background." },
+    "surfaceColor": { "$ref": "#/definitions/hex" },
+    "textColor": { "$ref": "#/definitions/hex" },
+    "textSecondaryColor": { "$ref": "#/definitions/hex" },
+    "defaultTheme": { "type": "string", "enum": ["light", "dark"], "default": "light", "description": "Theme applied before the visitor picks one." },
+    "modes": {
+      "type": "object",
+      "description": "Full, contrast-checked palettes per theme, as emitted by the Orkosi brand engine. When present they override the palette apply-brand derives from primaryColor/accentColor for that theme.",
+      "additionalProperties": false,
+      "properties": {
+        "light": { "$ref": "#/definitions/mode" },
+        "dark": { "$ref": "#/definitions/mode" }
+      }
+    },
+
+    "brandFonts": {
+      "type": "object",
+      "description": "Google Fonts family names. Loaded by client/index.html and mapped to --font-heading/--font-body/--font-mono.",
+      "properties": {
+        "heading": { "type": "string" },
+        "body": { "type": "string" },
+        "mono": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "headingFont": { "type": "string", "description": "Legacy flat alias of brandFonts.heading." },
+    "bodyFont": { "type": "string" },
+    "monoFont": { "type": "string" },
+    "typography": {
+      "type": "object",
+      "description": "Legacy grouped fonts { heading, body, mono } and/or the brand engine's `scale` block (display/body px arrays, line heights, tracking).",
+      "additionalProperties": true
+    },
+
+    "spacing": {
+      "description": "Global spacing density: multiplies the --space-* scale (xs 4px … 3xl 64px). Preset or a number 0.75–1.5.",
+      "oneOf": [
+        { "type": "string", "enum": ["compact", "comfortable", "spacious"] },
+        { "type": "number", "minimum": 0.75, "maximum": 1.5 }
+      ]
+    },
+    "radius": {
+      "description": "Corner radius for controls and cards (--radius, --radius-xs…lg derive from it). Preset or CSS length.",
+      "oneOf": [
+        { "type": "string", "enum": ["none", "sm", "md", "lg", "xl", "full"] },
+        { "type": "string", "pattern": "^\\d*\\.?\\d+(px|rem|em)$" }
+      ]
+    },
+    "borderRadius": { "type": "string", "description": "Legacy alias of radius (CSS length)." },
+    "customCssVars": {
+      "type": "object",
+      "description": "Extra CSS custom properties emitted on :root, e.g. { \"--hero-gradient\": \"linear-gradient(...)\" }.",
+      "propertyNames": { "pattern": "^--[A-Za-z0-9-]+$" },
+      "additionalProperties": { "type": ["string", "number"] }
+    },
+
+    "logoPath": { "type": "string", "description": "Full logo, repo-relative (assets/logos/logo.svg → served at /assets/logos/logo.svg)." },
+    "svgLogoPath": { "type": "string", "description": "Square mark used in the navbar / auth card." },
+    "faviconPath": { "type": "string" },
+    "thumbnailPath": { "type": "string", "description": "Open Graph image." },
+    "brandGuidelinesPath": { "type": "string" },
+    "assets": {
+      "type": "object",
+      "description": "File names under assets/logos, assets/favicons, assets/og keyed by role (logo, logoMark, logoOnDark, favicon, ogImage…).",
+      "additionalProperties": { "type": "string" }
+    },
+    "logoApproved": { "type": "boolean" },
+    "customDomainConfigured": { "type": "boolean" },
+
+    "pricing": { "type": "object", "description": "Plan definitions surfaced as info.pricing.", "additionalProperties": true },
+    "securityHeaders": {
+      "type": "object",
+      "properties": {
+        "contentSecurityPolicy": {
+          "type": "object",
+          "description": "Extra CSP sources per directive, merged into the server's policy (scriptSrc, connectSrc, imgSrc, …).",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "name": { "type": "string", "description": "Legacy alias of companyName (KickOff shape)." },
+    "colors": { "type": "object", "description": "Legacy grouped colours { primary, accent, background, surface, text, textSecondary } or the brand engine's brand-mode block.", "additionalProperties": true },
+    "theme": { "type": "string", "enum": ["light", "dark"], "description": "Legacy alias of defaultTheme." },
+    "logo": { "description": "Legacy { url, favicon }.", "type": ["object", "string"] }
+  },
+  "definitions": {
+    "hex": { "type": "string", "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" },
+    "mode": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "primary": { "$ref": "#/definitions/hex" },
+        "secondary": { "$ref": "#/definitions/hex" },
+        "accent": { "$ref": "#/definitions/hex" },
+        "bg": { "$ref": "#/definitions/hex" },
+        "surface": { "$ref": "#/definitions/hex" },
+        "surfaceRaised": { "$ref": "#/definitions/hex" },
+        "text": { "$ref": "#/definitions/hex" },
+        "textMuted": { "$ref": "#/definitions/hex" },
+        "textFaint": { "$ref": "#/definitions/hex" },
+        "border": { "$ref": "#/definitions/hex" },
+        "hairline": { "type": "string", "description": "hex or rgba()" },
+        "primaryHover": { "$ref": "#/definitions/hex" },
+        "primaryText": { "$ref": "#/definitions/hex" },
+        "secondaryText": { "$ref": "#/definitions/hex" },
+        "accentText": { "$ref": "#/definitions/hex" },
+        "onPrimary": { "$ref": "#/definitions/hex" },
+        "onSecondary": { "$ref": "#/definitions/hex" },
+        "onAccent": { "$ref": "#/definitions/hex" },
+        "semantic": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "fill": { "$ref": "#/definitions/hex" },
+              "on": { "$ref": "#/definitions/hex" },
+              "text": { "$ref": "#/definitions/hex" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

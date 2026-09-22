@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" fill="none" role="img" aria-label="Assimetria favicon">
+  <rect width="44" height="44" rx="8" fill="#0a0a12"/>
+  <defs>
+    <clipPath id="mc">
+      <rect x="3" y="3" width="24" height="38"/>
+    </clipPath>
+  </defs>
+  <circle cx="17" cy="22" r="13.5" fill="white" clip-path="url(#mc)"/>
+  <rect x="26" y="9" width="3.5" height="3.5" fill="white"/>
+  <rect x="30.5" y="13" width="3.5" height="3.5" fill="white"/>
+  <rect x="26" y="17" width="3.5" height="3.5" fill="white"/>
+  <rect x="35" y="17" width="3.5" height="3.5" fill="white"/>
+  <rect x="30.5" y="21" width="3.5" height="3.5" fill="white"/>
+  <rect x="26" y="25" width="3.5" height="3.5" fill="white"/>
+  <rect x="35" y="25" width="3.5" height="3.5" fill="white"/>
+  <rect x="30.5" y="29" width="3.5" height="3.5" fill="white"/>
+  <rect x="26" y="33" width="3.5" height="3.5" fill="white"/>
+</svg>

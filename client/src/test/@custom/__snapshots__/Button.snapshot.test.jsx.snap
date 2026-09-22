@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button snapshot renders default variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-primary text-brand-text-on-primary hover:bg-brand-primary/90 h-10 px-4 py-2 text-sm"
+>
+  Click me
+</button>
+`;
+
+exports[`Button snapshot renders destructive variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/90 h-10 px-4 py-2 text-sm"
+>
+  Delete
+</button>
+`;
+
+exports[`Button snapshot renders disabled 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-primary text-brand-text-on-primary hover:bg-brand-primary/90 h-10 px-4 py-2 text-sm"
+  disabled=""
+>
+  Disabled
+</button>
+`;
+
+exports[`Button snapshot renders ghost variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] hover:bg-brand-surface-hover hover:text-brand-text h-10 px-4 py-2 text-sm"
+>
+  Ghost
+</button>
+`;
+
+exports[`Button snapshot renders icon size 1`] = `
+<button
+  aria-label="icon"
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-primary text-brand-text-on-primary hover:bg-brand-primary/90 h-10 w-10"
+/>
+`;
+
+exports[`Button snapshot renders large size 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-primary text-brand-text-on-primary hover:bg-brand-primary/90 h-11 rounded-md px-8 text-base"
+>
+  Large
+</button>
+`;
+
+exports[`Button snapshot renders link variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] text-brand-primary underline-offset-4 hover:underline h-10 px-4 py-2 text-sm"
+>
+  Link
+</button>
+`;
+
+exports[`Button snapshot renders outline variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] border border-brand-border bg-brand-bg hover:bg-brand-surface-hover hover:text-brand-text h-10 px-4 py-2 text-sm"
+>
+  Cancel
+</button>
+`;
+
+exports[`Button snapshot renders secondary variant 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-surface text-brand-text hover:bg-brand-surface-hover h-10 px-4 py-2 text-sm"
+>
+  Secondary
+</button>
+`;
+
+exports[`Button snapshot renders small size 1`] = `
+<button
+  class="inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-brand-bg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-brand-primary text-brand-text-on-primary hover:bg-brand-primary/90 h-9 rounded-md px-3 text-sm"
+>
+  Small
+</button>
+`;

@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Input snapshot applies custom className 1`] = `
+<input
+  class="flex h-10 w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-xs"
+/>
+`;
+
+exports[`Input snapshot renders default text input 1`] = `
+<input
+  class="flex h-10 w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+/>
+`;
+
+exports[`Input snapshot renders disabled input 1`] = `
+<input
+  class="flex h-10 w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  disabled=""
+  value="locked"
+/>
+`;
+
+exports[`Input snapshot renders email input with placeholder 1`] = `
+<input
+  class="flex h-10 w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  placeholder="you@example.com"
+  type="email"
+/>
+`;
+
+exports[`Input snapshot renders password input 1`] = `
+<input
+  class="flex h-10 w-full rounded-md border border-brand-border bg-brand-bg px-3 py-2 text-sm ring-offset-brand-bg file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-brand-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  type="password"
+/>
+`;

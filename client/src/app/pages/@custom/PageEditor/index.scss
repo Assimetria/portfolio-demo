@@ -1,0 +1,41 @@
+// PageEditor styles
+
+// Safe-area insets for devices with home indicator (iPhone X+)
+@supports (padding: env(safe-area-inset-bottom)) {
+  @media (max-width: 1023px) {
+    .page-editor {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
+// Prevent iOS font-size zoom on input focus (inputs < 16px trigger zoom)
+@media (max-width: 639px) {
+  .block-textarea,
+  .block-input,
+  .meta-input {
+    font-size: 16px;
+  }
+}
+
+// Landscape mobile: compact header to preserve canvas height
+@media (orientation: landscape) and (max-height: 500px) {
+  .editor-header {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .editor-meta {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+}
+
+// Ensure canvas is scrollable without overflowing on mobile
+@media (max-width: 1023px) {
+  .canvas {
+    max-height: calc(100dvh - 180px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

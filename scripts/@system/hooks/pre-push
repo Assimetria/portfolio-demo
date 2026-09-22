@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Pre-push hook: Block non-Rui pushes to main; block WIP commits on main (#29527)
+# Install via: scripts/setup.sh (or manually: cp scripts/@system/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push)
+
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+remote="$1"
+url="$2"
+
+# Read stdin (list of refs being pushed: <local ref> <local sha1> <remote ref> <remote sha1>)
+refs_input=$(cat)
+
+if [ "$current_branch" = "main" ]; then
+    # Allow only Rui (by git user or system user)
+    git_user=$(git config user.name 2>/dev/null)
+    sys_user=$(whoami)
+
+    # Rui's known identifiers
+    allowed_users="ruipedro|rui|Rui Pedro|rpdmiranda"
+
+    if echo "$git_user" | grep -qiE "$allowed_users" || echo "$sys_user" | grep -qiE "$allowed_users"; then
+        : # Rui authorized — continue to WIP check below
+    else
+        echo ""
+        echo "╔══════════════════════════════════════════════════════╗"
+        echo "║  ❌ PUSH TO MAIN BLOCKED                            ║"
+        echo "║                                                      ║"
+        echo "║  Only Rui can push to main.                          ║"
+        echo "║  Push to 'dev' instead:                              ║"
+        echo "║    git push origin dev                               ║"
+        echo "║                                                      ║"
+        echo "║  Workflow: dev → review → main (Rui merges)          ║"
+        echo "╚══════════════════════════════════════════════════════╝"
+        echo ""
+        exit 1
+    fi
+
+    # Block WIP commits from main (#29527)
+    # WIP auto-save commits by factory-done must not ship to production.
+    while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+        [ -z "$local_ref" ] && continue
+        if [[ "$remote_ref" == "refs/heads/main" ]] || [[ "$remote_ref" == "main" ]]; then
+            if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
+                range="$local_sha"
+            else
+                range="${remote_sha}..${local_sha}"
+            fi
+            wip_commits=$(git log --oneline "$range" 2>/dev/null | grep -iE "^[0-9a-f]+ WIP:")
+            if [ -n "$wip_commits" ]; then
+                echo ""
+                echo "╔══════════════════════════════════════════════════════════╗"
+                echo "║  ❌ WIP COMMITS BLOCKED FROM MAIN (#29527)              ║"
+                echo "║                                                          ║"
+                echo "║  Auto-saved WIP commits must not ship to production.    ║"
+                echo "║  Squash or remove them before pushing to main.          ║"
+                echo "║                                                          ║"
+                echo "║  To squash: git rebase -i origin/main                   ║"
+                echo "╚══════════════════════════════════════════════════════════╝"
+                echo ""
+                echo "WIP commits found:"
+                echo "$wip_commits"
+                exit 1
+            fi
+        fi
+    done <<< "$refs_input"
+fi
+
+exit 0

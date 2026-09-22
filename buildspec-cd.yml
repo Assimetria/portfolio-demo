@@ -1,0 +1,126 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS CodeBuild — Deploy (mirror of .github/workflows/deploy.yml)
+#
+# Docker build → push <ecr-repo>:<sha> and :latest → App Runner start-deployment
+# → wait for RUNNING → verify /api/ready (503 until the database answers).
+#
+# The App Runner service tracks :latest (auto-deploy disabled) and already has
+# Port=3000 + runtime env vars configured by Orkosi provisioning. We therefore
+# use start-deployment rather than update-service, which would replace the
+# ImageConfiguration (and wipe RuntimeEnvironmentVariables).
+#
+# Required env vars (set on the CodeBuild project):
+#   AWS_REGION               — e.g. eu-west-1
+#   AWS_ACCOUNT_ID           — for the ECR registry URI
+#   ECR_REPO_NAME            — ECR repository (e.g. orkosi-customer-acme); ECR_REPOSITORY accepted as alias
+#   APP_RUNNER_SERVICE_ARN   — App Runner service to roll out
+# Optional:
+#   APP_HEALTH_URL           — public readiness URL (…/api/ready); defaults to the App Runner service domain
+#   ALERT_SNS_TOPIC_ARN      — SNS topic for a success notification
+#
+# Injected by CodeBuild: CODEBUILD_RESOLVED_SOURCE_VERSION — commit SHA
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: "production"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - echo "--- Install started at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - aws --version
+      - docker --version
+
+  pre_build:
+    commands:
+      - echo "--- Pre-build at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - export ECR_REPO_NAME="${ECR_REPO_NAME:-${ECR_REPOSITORY:-}}"
+      - |
+        for v in AWS_REGION AWS_ACCOUNT_ID ECR_REPO_NAME APP_RUNNER_SERVICE_ARN; do
+          eval "val=\${$v:-}"
+          [ -n "$val" ] || { echo "ERROR: $v is not set on the CodeBuild project"; exit 1; }
+        done
+      - export DEPLOY_SHA="${CODEBUILD_RESOLVED_SOURCE_VERSION:?CODEBUILD_RESOLVED_SOURCE_VERSION missing}"
+      - export SHORT_SHA="${DEPLOY_SHA:0:8}"
+      - export ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      - export ECR_IMAGE="${ECR_REGISTRY}/${ECR_REPO_NAME}:${DEPLOY_SHA}"
+      - export ECR_LATEST="${ECR_REGISTRY}/${ECR_REPO_NAME}:latest"
+      - echo "Deploying ${SHORT_SHA} → ${ECR_IMAGE}"
+      - aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
+      # Warm the layer cache from the previous image when available.
+      - docker pull "${ECR_LATEST}" >/dev/null 2>&1 || echo "No previous :latest to use as cache"
+
+  build:
+    commands:
+      - echo "--- Build started at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - |
+        DOCKER_BUILDKIT=1 docker build \
+          --build-arg BUILD_SHA="${DEPLOY_SHA}" \
+          --build-arg BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from "${ECR_LATEST}" \
+          --tag "${ECR_IMAGE}" --tag "${ECR_LATEST}" .
+      - docker push "${ECR_IMAGE}"
+      - docker push "${ECR_LATEST}"
+
+  post_build:
+    commands:
+      - echo "--- Deploy started at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - |
+        if [ "$CODEBUILD_BUILD_SUCCEEDING" != "1" ]; then
+          echo "ERROR: build phase failed — not deploying"
+          exit 1
+        fi
+      - |
+        STATUS=$(aws apprunner describe-service --service-arn "${APP_RUNNER_SERVICE_ARN}" --region "${AWS_REGION}" --query 'Service.Status' --output text)
+        echo "Service status before deploy: ${STATUS}"
+        if [ "$STATUS" = "OPERATION_IN_PROGRESS" ]; then
+          echo "ERROR: App Runner service is busy — retry when the current operation finishes"
+          exit 1
+        fi
+        OP_ID=$(aws apprunner start-deployment --service-arn "${APP_RUNNER_SERVICE_ARN}" --region "${AWS_REGION}" --query 'OperationId' --output text)
+        echo "Started App Runner deployment operation ${OP_ID}"
+        echo "${OP_ID}" > /tmp/op_id
+      - echo "Waiting for App Runner to reach RUNNING (max 15 min)..."
+      - |
+        OP_ID=$(cat /tmp/op_id)
+        for i in $(seq 1 60); do
+          OP_STATUS=$(aws apprunner list-operations --service-arn "${APP_RUNNER_SERVICE_ARN}" --region "${AWS_REGION}" --max-results 20 \
+            --query "OperationSummaryList[?Id=='${OP_ID}'].Status | [0]" --output text 2>/dev/null || echo UNKNOWN)
+          SVC_STATUS=$(aws apprunner describe-service --service-arn "${APP_RUNNER_SERVICE_ARN}" --region "${AWS_REGION}" --query 'Service.Status' --output text)
+          echo "[$i/60] operation=${OP_STATUS} service=${SVC_STATUS}"
+          case "$OP_STATUS" in
+            SUCCEEDED) if [ "$SVC_STATUS" = "RUNNING" ]; then echo "Deployment succeeded"; break; fi ;;
+            FAILED|ROLLBACK_IN_PROGRESS|ROLLBACK_FAILED|ROLLBACK_SUCCEEDED)
+              echo "ERROR: App Runner deployment ${OP_STATUS} — new image failed its health check"; exit 1 ;;
+          esac
+          if [ "$i" = "60" ]; then echo "ERROR: timeout waiting for App Runner"; exit 1; fi
+          sleep 15
+        done
+      - |
+        if [ -z "${APP_HEALTH_URL:-}" ]; then
+          SERVICE_URL=$(aws apprunner describe-service --service-arn "${APP_RUNNER_SERVICE_ARN}" --region "${AWS_REGION}" --query 'Service.ServiceUrl' --output text)
+          APP_HEALTH_URL="https://${SERVICE_URL}/api/ready"
+        fi
+        echo "Readiness check — ${APP_HEALTH_URL}"
+        for i in $(seq 1 12); do
+          CODE=$(curl -s -o /tmp/ready.json -w "%{http_code}" --max-time 15 "${APP_HEALTH_URL}" || echo "000")
+          echo "[$i/12] HTTP ${CODE}"
+          if [ "$CODE" = "200" ]; then cat /tmp/ready.json; echo; break; fi
+          if [ "$i" = "12" ]; then echo "ERROR: readiness check never returned 200 (503 = database unreachable)"; cat /tmp/ready.json 2>/dev/null; exit 1; fi
+          sleep 10
+        done
+      - echo "Deployed ${SHORT_SHA} successfully"
+      - |
+        if [ -n "${ALERT_SNS_TOPIC_ARN:-}" ]; then
+          aws sns publish \
+            --topic-arn "${ALERT_SNS_TOPIC_ARN}" \
+            --subject "${ECR_REPO_NAME} deploy succeeded — ${SHORT_SHA}" \
+            --message "Deployed ${DEPLOY_SHA} at $(date -u +%FT%TZ)." \
+            --region "${AWS_REGION}" || true
+        fi

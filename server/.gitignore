@@ -1,0 +1,17 @@
+# Defense-in-depth: never commit secrets from the server directory.
+# The root .gitignore already covers these; this is a safety net.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# RSA / PEM key files — use server/.keys/ (already gitignored at root)
+*.pem
+*.key
+*_private.pem
+*_private.key
+.keys/
+
+# Local uploads directory — kept out of git
+uploads/

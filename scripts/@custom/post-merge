@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# post-merge: Regenerate @system barrel files after every merge.
+# Ensures barrel files are properly sorted and formatted after git's union
+# merge driver combines additions from both sides of the merge.
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+node "$REPO_ROOT/scripts/@system/generate-barrels.js" --quiet 2>/dev/null || \
+  node "$REPO_ROOT/scripts/@system/generate-barrels.js"

@@ -1,0 +1,13 @@
+{
+  "//": "Deps listed here are protected from template-sync overwrites. See #35926.",
+  "//usage": "removed_deps: deps intentionally deleted (sync will not re-add). pinned_deps: deps with fixed versions (sync will not downgrade).",
+  "removed_deps": {
+    "package.json": ["node-forge"],
+    "server/package.json": ["@sentry/tracing"]
+  },
+  "pinned_deps": {
+    "server/package.json": {
+      "@sentry/node": "^8.55.0"
+    }
+  }
+}

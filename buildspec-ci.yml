@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS CodeBuild — CI (mirror of .github/workflows/ci.yml)
+#
+# lint (blocking) → client tests → server tests → build → Docker smoke test.
+# Every failure fails the build; nothing is swallowed with `|| echo`.
+#
+# The Docker smoke step needs a CodeBuild project with privileged mode enabled;
+# when the Docker daemon is unavailable it fails loudly instead of skipping.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 0.2
+
+# NODE_ENV is deliberately NOT a global variable: it would leak into
+# `npm run build` and produce a test-mode client bundle. The test commands set
+# it inline; the Dockerfile sets NODE_ENV=production for its own build.
+env:
+  variables:
+    CI: "true"
+    FORCE_COLOR: "1"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - echo "--- Install started at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - node --version && npm --version
+      - npm ci --ignore-scripts --no-audit --no-fund
+      - npm ci --ignore-scripts --no-audit --no-fund --prefix client
+      - npm ci --ignore-scripts --no-audit --no-fund --prefix server
+
+  pre_build:
+    commands:
+      - echo "--- Lint started at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - npm run lint --prefix client
+
+  build:
+    commands:
+      - echo "--- Client tests at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - NODE_ENV=test npm test --prefix client -- --ci
+      - echo "--- Server tests at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - NODE_ENV=test npm test --prefix server -- --ci --forceExit
+      - echo "--- Build at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - npm run build
+      - echo "--- Docker smoke at $(date -u +%Y-%m-%dT%H:%M:%SZ) ---"
+      - docker info >/dev/null 2>&1 || { echo "ERROR - Docker daemon unavailable. Enable privileged mode on the CodeBuild project."; exit 1; }
+      - docker build --build-arg BUILD_SHA="${CODEBUILD_RESOLVED_SOURCE_VERSION:-local}" --build-arg BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" -t product-template:ci .
+      - bash scripts/ci/docker-smoke.sh product-template:ci
+
+  post_build:
+    commands:
+      - |
+        if [ "$CODEBUILD_BUILD_SUCCEEDING" = "1" ]; then
+          echo "CI passed — commit ${CODEBUILD_RESOLVED_SOURCE_VERSION}"
+        else
+          echo "CI FAILED — commit ${CODEBUILD_RESOLVED_SOURCE_VERSION}"
+          exit 1
+        fi
+
+cache:
+  paths:
+    - "/root/.npm/**/*"

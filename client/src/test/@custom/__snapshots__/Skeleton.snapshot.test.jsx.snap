@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Skeleton snapshot renders circular avatar skeleton 1`] = `
+<div
+  class="animate-pulse bg-brand-surface h-12 w-12 rounded-full"
+/>
+`;
+
+exports[`Skeleton snapshot renders default skeleton 1`] = `
+<div
+  class="animate-pulse rounded-md bg-brand-surface"
+/>
+`;
+
+exports[`Skeleton snapshot renders with size utility classes 1`] = `
+<div
+  class="animate-pulse rounded-md bg-brand-surface h-10 w-full"
+/>
+`;

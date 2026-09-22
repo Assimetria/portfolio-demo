@@ -1,0 +1,93 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Local production-like stack — the same single container App Runner runs.
+#
+#  app    Express serves the API and the built client (client/dist) on :3000,
+#         built from the root Dockerfile (start.sh runs migrations, then boots).
+#  db     PostgreSQL 15
+#  redis  Redis 7 (optional at runtime; enables token blacklist + caching)
+#
+#  Usage:
+#    docker compose up --build            # http://localhost:3000
+#    docker compose logs -f app
+#    docker compose down -v               # also drops the database volume
+#
+#  For day-to-day development run only the databases and start client/server
+#  natively with hot reload:  docker compose -f docker-compose.local.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: product-template
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-product_template}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-product_template}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_SHA: ${BUILD_SHA:-local}
+        BUILD_DATE: ${BUILD_DATE:-}
+    image: product-template:local
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-product_template}
+      REDIS_URL: redis://redis:6379
+      # RS256 JWT keys. Leave empty and start.sh generates an ephemeral pair
+      # (sessions reset on every restart). For a stable local login generate a
+      # pair with `npm run generate-keys` and export the values here.
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
+      CSRF_SECRET: ${CSRF_SECRET:-}
+      SEED_PASSWORD: ${SEED_PASSWORD:-}
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # Readiness (503 until the database answers) — the app is only "healthy"
+      # here when it can actually serve requests.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/ready >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  pgdata:
+  redisdata:

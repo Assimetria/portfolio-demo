@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OG Card — Product Template (Dark)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .og-card {
+    width: 1200px;
+    height: 630px;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Accent highlight bar at top */
+  .og-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #3b82f6;
+  }
+  /* Subtle bottom fade */
+  .og-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+    pointer-events: none;
+  }
+  .logo-mark {
+    width: 72px;
+    height: 72px;
+    background: #3b82f6;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+  }
+  .logo-mark svg {
+    width: 44px;
+    height: 44px;
+  }
+  .brand-name {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+  }
+  .tagline {
+    font-size: 22px;
+    font-weight: 400;
+    color: #94a3b8;
+    letter-spacing: -0.2px;
+  }
+  .domain {
+    position: absolute;
+    bottom: 32px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="og-card">
+  <div class="logo-mark">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+      <path d="M10 22 L15.5 16 L15.5 18.8 L12.8 22 L15.5 25.2 L15.5 28 Z" fill="#ffffff"/>
+      <path d="M34 22 L28.5 16 L28.5 18.8 L31.2 22 L28.5 25.2 L28.5 28 Z" fill="#ffffff"/>
+      <line x1="26" y1="13.5" x2="20.5" y2="30.5" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="brand-name">Product Template</div>
+  <div class="tagline">Ship your SaaS in days, not months.</div>
+  <div class="domain">product-template · assimetria.com</div>
+</div>
+
+</body>
+</html>

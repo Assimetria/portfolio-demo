@@ -1,0 +1,18 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import { LoginForm } from '@/app/components/@system/LoginForm'
+jest.mock('@/app/lib/@system/api', () => ({ api: { post: jest.fn() } }))
+const { api } = require('@/app/lib/@system/api')
+function renderLoginForm(props = {}) { return render(<MemoryRouter><LoginForm {...props} /></MemoryRouter>) }
+beforeEach(() => { jest.clearAllMocks() })
+describe('LoginForm', () => {
+  it('renders email and password fields', () => { renderLoginForm(); expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument(); expect(screen.getByPlaceholderText(/••••/)).toBeInTheDocument() })
+  it('renders sign in button', () => { renderLoginForm(); expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument() })
+  it('shows error when email is empty', async () => { const user = userEvent.setup(); renderLoginForm(); await user.click(screen.getByRole('button', { name: /sign in/i })); expect(screen.getByRole('alert')).toHaveTextContent('Email is required') })
+  it('shows error for invalid email', async () => { const user = userEvent.setup(); renderLoginForm(); await user.type(screen.getByPlaceholderText('you@example.com'), 'notanemail'); await user.type(screen.getByPlaceholderText(/••••/), 'password123'); await user.click(screen.getByRole('button', { name: /sign in/i })); expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid email') })
+  it('shows error when password is too short', async () => { const user = userEvent.setup(); renderLoginForm(); await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com'); await user.type(screen.getByPlaceholderText(/••••/), 'short'); await user.click(screen.getByRole('button', { name: /sign in/i })); expect(screen.getByRole('alert')).toHaveTextContent('Password must be at least 8 characters') })
+  it('calls API and onSuccess on valid submit', async () => { const user = userEvent.setup(); const onSuccess = jest.fn(); api.post.mockResolvedValue({ user: { id: 1 } }); renderLoginForm({ onSuccess }); await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com'); await user.type(screen.getByPlaceholderText(/••••/), 'password123'); await user.click(screen.getByRole('button', { name: /sign in/i })); await waitFor(() => { expect(api.post).toHaveBeenCalledWith('/auth/login', { email: 'test@example.com', password: 'password123', rememberMe: false }) }); expect(onSuccess).toHaveBeenCalledWith({ user: { id: 1 } }) })
+  it('handles totp_required response', async () => { const user = userEvent.setup(); const onSuccess = jest.fn(); api.post.mockResolvedValue({ totp_required: true }); renderLoginForm({ onSuccess }); await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com'); await user.type(screen.getByPlaceholderText(/••••/), 'password123'); await user.click(screen.getByRole('button', { name: /sign in/i })); await waitFor(() => { expect(onSuccess).toHaveBeenCalledWith({ totp_required: true }) }) })
+  it('shows server error on API failure', async () => { const user = userEvent.setup(); api.post.mockRejectedValue(new Error('Invalid credentials')); renderLoginForm(); await user.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com'); await user.type(screen.getByPlaceholderText(/••••/), 'password123'); await user.click(screen.getByRole('button', { name: /sign in/i })); await waitFor(() => { expect(screen.getByRole('alert')).toHaveTextContent('Invalid credentials') }) })
+})

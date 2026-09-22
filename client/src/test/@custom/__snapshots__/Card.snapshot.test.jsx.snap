@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Card snapshot applies custom className to Card 1`] = `
+<div
+  class="rounded-lg bg-brand-surface text-brand-text shadow-sm border-primary"
+/>
+`;
+
+exports[`Card snapshot renders card with header only 1`] = `
+<div
+  class="rounded-lg bg-brand-surface text-brand-text shadow-sm"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-4"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      Title
+    </h3>
+    <p
+      class="text-sm text-brand-text-muted"
+    >
+      Description
+    </p>
+  </div>
+</div>
+`;
+
+exports[`Card snapshot renders empty card 1`] = `
+<div
+  class="rounded-lg bg-brand-surface text-brand-text shadow-sm"
+/>
+`;
+
+exports[`Card snapshot renders full card with content and footer 1`] = `
+<div
+  class="rounded-lg bg-brand-surface text-brand-text shadow-sm"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-4"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      My Card
+    </h3>
+    <p
+      class="text-sm text-brand-text-muted"
+    >
+      A description of the card
+    </p>
+  </div>
+  <div
+    class="p-4 pt-0"
+  >
+    <p>
+      Card body content goes here.
+    </p>
+  </div>
+  <div
+    class="flex items-center p-4 pt-0"
+  >
+    <span>
+      Footer
+    </span>
+  </div>
+</div>
+`;

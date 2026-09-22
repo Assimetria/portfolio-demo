@@ -1,0 +1,825 @@
+{
+  "version": "2.1.0",
+  "templateSlug": "informational",
+  "templateRepo": "Assimetria/product-template-informational",
+  "upstream": {
+    "repo": "Assimetria/product-template",
+    "version": "2.0.0"
+  },
+  "generatedAt": "2026-09-20",
+  "maintainer": "assimetria",
+  "description": "Assimetria Informational Website Template (product-template-informational) — feature manifest. Fork of the SaaS product-template whose front door is a content-driven single-page website (hero, about, services, team, testimonials, contact form + map) with an admin contact inbox. Inherited SaaS features remain listed below. Powers the Template Compliance Dashboard in Assimetria OS.",
+  "versioning": {
+    "versionFile": "VERSION",
+    "changelog": "CHANGELOG.md",
+    "tagPattern": "v{version}",
+    "releaseWorkflow": ".github/workflows/release.yml",
+    "bumpCommand": "node scripts/@system/version.js --bump <patch|minor|major> --title \"…\" --notes-file notes.md",
+    "checkCommand": "node scripts/@system/version.js --check",
+    "upgradeCommand": "node scripts/@system/upgrade-from-template.js [--to vX.Y.Z] [--dry-run]",
+    "healthField": "template",
+    "notes": "Orkosi reads v* tags + the CHANGELOG section at each tag from templateRepo, compares with the customer repo VERSION and offers an upgrade; the merge applies `ownership` from the manifest at the target tag."
+  },
+  "ownership": {
+    "system": [
+      "**/@system/**",
+      "scripts/apply-brand.js",
+      "scripts/prebuild.js",
+      "scripts/lib/**",
+      "scripts/ci/**",
+      "scripts/generate-*.js",
+      "scripts/ensure-transparent-logo.js",
+      "client/webpack.config.mjs",
+      "client/tailwind.config.mjs",
+      "client/postcss.config.*",
+      "client/scripts/**",
+      ".github/workflows/**",
+      "Dockerfile",
+      ".dockerignore",
+      "start.sh",
+      "buildspec-ci.yml",
+      "buildspec-cd.yml",
+      "docker-compose.yml",
+      "docker-compose.local.yml",
+      "template-manifest.json",
+      "brand.schema.json",
+      "VERSION"
+    ],
+    "custom": [
+      "**/@custom/**"
+    ],
+    "customer": [
+      "brand.json",
+      "assets/**",
+      "client/public/**",
+      "README.md",
+      "CLAUDE.md",
+      "DOCKER_CLAUDE.md",
+      ".env",
+      ".env.*",
+      "server/.env",
+      "server/.env.*",
+      "client/.env",
+      "client/.env.*"
+    ],
+    "merge": [
+      "**"
+    ]
+  },
+  "templateType": "informational",
+  "stack": {
+    "frontend": "React 18 + Webpack 5 + JavaScript + SCSS + Tailwind CSS + shadcn/ui + Lucide React",
+    "backend": "Node.js 22 + Express + pg-promise (PostgreSQL)",
+    "auth": "JWT RS256 sessions (httpOnly cookies, refresh tokens)",
+    "payments": "Stripe",
+    "database": "PostgreSQL 15+ (migrations run once at container start)",
+    "cache": "Redis 7 (optional — rate limits, token blacklist, caching fall back to memory)",
+    "logging": "Pino + pino-http",
+    "hosting": "AWS App Runner — one container (Express serves /api + built client) on port 3000, images in ECR",
+    "cicd": "GitHub Actions (ci.yml merge gate → deploy.yml on green main) with AWS CodeBuild equivalents (buildspec-ci.yml / buildspec-cd.yml)",
+    "testing": "Jest (client + server), Playwright E2E (Chromium by default), Docker smoke test in CI"
+  },
+  "categories": [
+    "site",
+    "contact",
+    "auth",
+    "database",
+    "dashboard",
+    "landing",
+    "legal",
+    "referral",
+    "payments",
+    "support",
+    "storage",
+    "devops",
+    "email",
+    "notification",
+    "testing",
+    "analytics",
+    "security",
+    "modules",
+    "misc"
+  ],
+  "features": [
+    {
+      "id": "auth-001",
+      "name": "Email/Password Authentication",
+      "category": "auth",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "JWT session auth with httpOnly cookie (7-day expiry). Login, register, logout, current-user endpoints. PrivateRoute guards authenticated pages. useAuth hook exposes session state. AuthPage handles both login and registration flows.",
+      "files": [
+        "server/src/api/@system/sessions/index.js",
+        "server/src/lib/@system/Helpers/auth.js",
+        "server/src/lib/@system/Helpers/jwt.js",
+        "client/src/app/hooks/@system/useAuth.js",
+        "client/src/app/components/@system/PrivateRoute/index.jsx",
+        "client/src/app/pages/static/@system/AuthPage/index.jsx"
+      ]
+    },
+    {
+      "id": "auth-002",
+      "name": "OAuth2 Social Login (Google + GitHub)",
+      "category": "auth",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "OAuth2 Authorization Code flow for Google and GitHub. No passport dependency — uses native fetch. Finds or creates users, links oauth_accounts table, issues same JWT cookie as email/password auth. OAuthButtons component renders provider buttons on the AuthPage.",
+      "files": [
+        "server/src/api/@system/oauth/index.js",
+        "server/src/lib/@system/OAuth/google.js",
+        "server/src/lib/@system/OAuth/github.js",
+        "server/src/db/repos/@system/OAuthRepo.js",
+        "server/src/db/migrations/@system/005_oauth_accounts.js",
+        "client/src/app/components/@system/OAuthButtons/index.jsx",
+        "client/src/app/pages/static/@system/AuthPage/index.jsx"
+      ],
+      "envVars": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "SERVER_URL"
+      ]
+    },
+    {
+      "id": "security-001",
+      "name": "Rate Limiting",
+      "category": "security",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Express rate limiting middleware with Redis-backed store (fallback to in-memory). General API rate limiter (100 req/min baseline DoS protection) applied to all /api routes. Endpoint-specific limiters for auth (login: 10/15min, register: 5/hr, password-reset: 5/hr, refresh: 30/min, oauth: 20/min), TOTP (setup: 5/hr, enable/disable: 5/10min), API keys (10/hr), uploads (20/min), AI (chat: 20/min, image: 5/hr), admin (read: 60/min, write: 10/min), and integration tests (10/min). All limiters return standard RateLimit-* headers and log warnings on threshold breach. Automatically disabled in test and development environments.",
+      "files": [
+        "server/src/lib/@system/RateLimit/index.js",
+        "server/src/app.js"
+      ],
+      "envVars": [
+        "REDIS_URL"
+      ]
+    },
+    {
+      "id": "database-001",
+      "name": "PostgreSQL Core Schema",
+      "category": "database",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Core tables: users (email, password_hash, role, timestamps), subscriptions (Stripe customer/subscription IDs, plan, status), sessions (token, user_id, expires_at). Migration runner executes @system then @custom migrations in order.",
+      "files": [
+        "server/src/db/schemas/@system/users.sql",
+        "server/src/db/schemas/@system/subscriptions.sql",
+        "server/src/db/schemas/@system/sessions.sql",
+        "server/src/db/migrations/@system/001_init.js",
+        "server/src/db/migrations/@system/002_sessions.js",
+        "server/src/db/migrations/@system/run.js",
+        "server/src/db/repos/@system/UserRepo.js",
+        "server/src/db/repos/@system/SubscriptionRepo.js",
+        "server/src/lib/@system/PostgreSQL/index.js"
+      ]
+    },
+    {
+      "id": "dashboard-001",
+      "name": "Authenticated App Shell",
+      "category": "dashboard",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Post-login app shell with Sidebar navigation, Header, PageLayout wrapper, and HomePage as the main dashboard entry point. PrivateRoute enforces authentication on all /app/* routes.",
+      "files": [
+        "client/src/app/pages/app/@system/HomePage/index.jsx",
+        "client/src/app/components/@system/Sidebar/index.jsx",
+        "client/src/app/components/@system/Header/index.jsx",
+        "client/src/app/components/@system/layout/index.jsx",
+        "client/src/app/routes/@system/AppRoutes.jsx"
+      ]
+    },
+    {
+      "id": "landing-001",
+      "name": "Marketing Landing Page",
+      "category": "landing",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Public landing page at / with hero section and CTA. Styled with Tailwind CSS + shadcn/ui. Includes AuthPage (/login, /register) and NotFoundPage (404 catch-all).",
+      "files": [
+        "client/src/app/pages/static/@system/LandingPage/index.jsx",
+        "client/src/app/pages/static/@system/AuthPage/index.jsx",
+        "client/src/app/pages/static/@system/NotFoundPage/index.jsx"
+      ]
+    },
+    {
+      "id": "landing-002",
+      "name": "Features Section (Icon Grid)",
+      "category": "landing",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Reusable FeaturesSection component with 6-item icon grid (2-col mobile, 3-col desktop). Accepts optional features, heading, and subheading props for per-product customisation. Default features cover the full @system stack: Webpack/React, Auth, Admin, Stripe, PostgreSQL, Docker.",
+      "files": [
+        "client/src/app/components/@system/FeaturesSection/index.jsx",
+        "client/src/app/pages/static/@system/LandingPage/index.jsx"
+      ]
+    },
+    {
+      "id": "payments-001",
+      "name": "Stripe Checkout Flow",
+      "category": "payments",
+      "status": "disabled-by-default",
+      "module": "billing",
+      "version": "1.1.0",
+      "description": "Full Stripe checkout flow: checkout session creation (with optional trial days), customer portal redirect, cancel/uncancel subscription, webhook handler (checkout.session.completed, customer.subscription.updated/deleted, invoice.payment_failed/succeeded), DB sync, /subscriptions/plans endpoint (live Stripe prices), BillingPage (authenticated), PricingPage (public).",
+      "files": [
+        "server/src/api/@system/stripe/index.js",
+        "server/src/api/@system/subscriptions/index.js",
+        "server/src/db/repos/@system/SubscriptionRepo.js",
+        "server/src/db/schemas/@system/subscriptions.sql",
+        "server/src/db/migrations/@system/010_stripe_customer_id.js",
+        "server/src/lib/@system/Stripe/index.js",
+        "client/src/app/api/@system/stripe.js",
+        "client/src/app/pages/app/@system/BillingPage/index.jsx",
+        "client/src/app/pages/static/@system/PricingPage/index.jsx",
+        "client/src/app/routes/@system/AppRoutes.jsx"
+      ],
+      "envVars": [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "APP_URL"
+      ]
+    },
+    {
+      "id": "devops-001",
+      "name": "Docker + AWS App Runner Deployment",
+      "category": "devops",
+      "status": "built",
+      "version": "2.0.0",
+      "description": "Multi-stage Dockerfile (node:22-alpine; client build → non-root Express runtime with tini, HEALTHCHECK on /api/health, OCI labels). start.sh validates the client build, derives missing secrets, injects brand/APP_URL/analytics placeholders, runs migrations exactly once (SKIP_STARTUP_MIGRATIONS) and boots degraded when the database is unreachable. docker-compose.yml = production-like local stack (app + PostgreSQL + Redis); docker-compose.local.yml = databases only for native dev.",
+      "files": [
+        "Dockerfile",
+        ".dockerignore",
+        "start.sh",
+        "docker-compose.yml",
+        "docker-compose.local.yml",
+        "scripts/ci/docker-smoke.sh",
+        "scripts/setup.sh"
+      ]
+    },
+    {
+      "id": "devops-002",
+      "name": "Health Check Endpoints",
+      "category": "devops",
+      "status": "built",
+      "version": "1.1.0",
+      "description": "GET /api/ping (liveness) and GET /api/health (status ok|degraded, db, auth, version, uptime). Always HTTP 200 so App Runner keeps the instance while the database is unavailable; degraded state is reported in the body for monitoring and the CI Docker smoke test.",
+      "files": [
+        "server/src/api/@system/ping/index.js",
+        "server/src/api/@system/health/index.js"
+      ]
+    },
+    {
+      "id": "devops-003",
+      "name": "CI/CD Pipeline (GitHub Actions + CodeBuild)",
+      "category": "devops",
+      "status": "built",
+      "version": "2.0.0",
+      "description": "ci.yml: parallel lint / client tests / server tests / production build / Docker smoke jobs feeding an aggregate `ci` status check (the branch-protection context Orkosi applies to main). deploy.yml: runs only after CI succeeds on main (workflow_run) — Docker build with layer cache → ECR :sha + :latest → App Runner start-deployment → wait for RUNNING → public health check. e2e.yml: nightly/on-demand Playwright. buildspec-ci.yml / buildspec-cd.yml mirror the same steps for AWS CodeBuild.",
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/deploy.yml",
+        ".github/workflows/e2e.yml",
+        "buildspec-ci.yml",
+        "buildspec-cd.yml",
+        "scripts/ci/docker-smoke.sh"
+      ],
+      "envVars": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "ECR_REPO_NAME",
+        "APP_RUNNER_SERVICE_ARN",
+        "APP_HEALTH_URL"
+      ]
+    },
+    {
+      "id": "misc-001",
+      "name": "Admin Panel API",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Admin-only API endpoints for user management and system oversight. Role check middleware gates access to admin routes.",
+      "files": [
+        "server/src/api/@system/admin/index.js",
+        "client/src/app/api/@system/admin.js",
+        "client/src/app/pages/app/@system/@admin/"
+      ]
+    },
+    {
+      "id": "misc-002",
+      "name": "User Profile",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "GET /user and PATCH /user — fetch and update the authenticated user's own profile.",
+      "files": [
+        "server/src/api/@system/user/index.js",
+        "server/src/db/repos/@system/UserRepo.js"
+      ]
+    },
+    {
+      "id": "email-001",
+      "name": "Transactional Email (Resend + SMTP + SES)",
+      "category": "email",
+      "status": "built",
+      "version": "2.0.0",
+      "description": "Multi-provider email service with pluggable adapters. Provider auto-detected from env vars (priority: Resend native API > SMTP relay > AWS SES > console fallback). Resend adapter uses REST API directly (no SDK, Node 18 fetch). SMTP adapter wraps nodemailer with connection pooling, TLS control, and Resend SMTP relay support. HTML templates (verification, welcome, password_reset, invitation, magic_link, notification) are inline-styled for email client compatibility. All sends tracked in email_logs table. Admin API: GET /api/email/provider, GET /api/email/verify, GET /api/email/quota (SES only), POST /api/email/test.",
+      "files": [
+        "server/src/lib/@system/Email/index.js",
+        "server/src/lib/@system/Email/adapters/resend.js",
+        "server/src/lib/@system/Email/adapters/smtp.js",
+        "server/src/lib/@system/Email/templates.js",
+        "server/src/api/@system/email/index.js",
+        "server/test/unit/@system/email.adapters.test.js"
+      ],
+      "envVars": {
+        "resend": [
+          "RESEND_API_KEY",
+          "EMAIL_FROM",
+          "RESEND_REPLY_TO"
+        ],
+        "smtp": [
+          "SMTP_HOST",
+          "SMTP_PORT",
+          "SMTP_USER",
+          "SMTP_PASS",
+          "EMAIL_FROM",
+          "SMTP_SECURE",
+          "SMTP_POOL"
+        ],
+        "ses": [
+          "AWS_REGION",
+          "AWS_ACCESS_KEY_ID",
+          "AWS_SECRET_ACCESS_KEY",
+          "SES_FROM_EMAIL"
+        ],
+        "shared": [
+          "EMAIL_PROVIDER",
+          "APP_URL",
+          "APP_NAME",
+          "SUPPORT_EMAIL"
+        ]
+      }
+    },
+    {
+      "id": "notification-001",
+      "name": "Notification Adapter (Slack + Discord + Console)",
+      "category": "notification",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Unified notification adapter with pluggable backends. Abstracts Slack, Discord, and console logging behind a single interface. Provider auto-detected from env vars (priority: Slack > Discord > console fallback). Supports title, body, severity levels (info/warning/error), and metadata fields. Health check endpoints for monitoring adapter status.",
+      "files": [
+        "server/src/lib/@system/NotificationAdapter/index.js",
+        "server/src/lib/@system/NotificationAdapter/SlackAdapter.js",
+        "server/src/lib/@system/NotificationAdapter/DiscordAdapter.js",
+        "server/src/lib/@system/NotificationAdapter/ConsoleAdapter.js"
+      ],
+      "envVars": [
+        "NOTIFICATION_PROVIDER",
+        "SLACK_WEBHOOK_URL",
+        "DISCORD_WEBHOOK_URL"
+      ]
+    },
+    {
+      "id": "misc-003",
+      "name": "Caching Layer",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Cache abstraction that delegates to Redis (production) or NodeCache (in-process, no Redis required for dev). Transparent swap via env config.",
+      "files": [
+        "server/src/lib/@system/Cache/index.js",
+        "server/src/lib/@system/Redis/index.js",
+        "server/src/lib/@system/NodeCache/index.js"
+      ]
+    },
+    {
+      "id": "misc-004",
+      "name": "Logging (Pino)",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Pino logger singleton with pino-http request logging middleware. Structured JSON logs in production, pretty-print in development.",
+      "files": [
+        "server/src/lib/@system/Logger/index.js"
+      ]
+    },
+    {
+      "id": "misc-005",
+      "name": "Error Handling",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "AppError class with standardised error codes and HTTP status mappings. Express error middleware converts AppErrors to JSON responses.",
+      "files": [
+        "server/src/lib/@system/Errors/index.js"
+      ]
+    },
+    {
+      "id": "misc-006",
+      "name": "Scheduler / Cron Tasks",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Cron-based scheduler that loads @system tasks (payment retries, subscription sync) and @custom tasks (product-specific jobs) from their respective index.js files.",
+      "files": [
+        "server/src/scheduler/tasks/@system/index.js",
+        "server/src/scheduler/tasks/@custom/index.js"
+      ]
+    },
+    {
+      "id": "misc-007",
+      "name": "Background Workers",
+      "category": "misc",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Background job processor infrastructure. @system worker base + @custom worker extension point for queue consumers and async jobs.",
+      "files": [
+        "server/src/workers/@system/index.js",
+        "server/src/workers/@custom/index.js"
+      ]
+    },
+    {
+      "id": "analytics-001",
+      "name": "Analytics Integration (placeholder)",
+      "category": "analytics",
+      "status": "planned",
+      "version": null,
+      "description": "PostHog or Google Analytics integration for page views, conversion events, and user behaviour tracking. To be added to client/src/app/lib/@system/.",
+      "files": []
+    },
+    {
+      "id": "legal-001",
+      "name": "Legal Pages + GDPR Compliance",
+      "category": "legal",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Privacy Policy (/privacy), Terms of Service (/terms), Cookie Policy (/cookies) pages. GDPR-compliant cookie consent banner (CookieConsentBanner, Art. 6/7) with localStorage persistence. GDPR API: POST /api/gdpr/consent (Art. 7 consent recording), GET /api/gdpr/my-data (Art. 15 data export), DELETE /api/gdpr/my-data (Art. 17 data erasure). gdpr_consent_log table via migration 015.",
+      "files": [
+        "client/src/app/components/@system/CookieConsentBanner/index.jsx",
+        "client/src/app/pages/static/@system/CookiePolicyPage/index.jsx",
+        "client/src/app/pages/static/@system/PrivacyPolicyPage/index.jsx",
+        "client/src/app/pages/static/@system/TermsPage/index.jsx",
+        "client/src/App.jsx",
+        "server/src/api/@system/gdpr/index.js",
+        "server/src/db/migrations/@system/015_gdpr_compliance.js"
+      ]
+    },
+    {
+      "id": "referral-001",
+      "name": "Referral System (placeholder)",
+      "category": "referral",
+      "status": "planned",
+      "version": null,
+      "description": "Referral code generation, tracking, and reward attribution. DB table + API endpoints + client UI.",
+      "files": []
+    },
+    {
+      "id": "support-001",
+      "name": "Support Integration (placeholder)",
+      "category": "support",
+      "status": "planned",
+      "version": null,
+      "description": "Intercom or Crisp chat widget integration in client @system. Support ticket API if needed.",
+      "files": []
+    },
+    {
+      "id": "storage-001",
+      "name": "File Storage (placeholder)",
+      "category": "storage",
+      "status": "planned",
+      "version": null,
+      "description": "AWS S3 or Cloudflare R2 integration for user file uploads. Signed URL generation, multipart upload support.",
+      "files": []
+    },
+    {
+      "id": "testing-001",
+      "name": "Test Infrastructure",
+      "category": "testing",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Jest suites for the server (unit + supertest API tests with a mocked database) and the client (React Testing Library + snapshots). Both run as blocking CI jobs.",
+      "files": [
+        "server/test/api/@system/",
+        "server/test/api/@custom/",
+        "server/test/unit/@system/",
+        "server/test/unit/@custom/",
+        "client/src/test/@system/",
+        "client/src/test/@custom/"
+      ]
+    },
+    {
+      "id": "testing-002",
+      "name": "Playwright E2E Suite",
+      "category": "testing",
+      "status": "built",
+      "version": "2.0.0",
+      "description": "Playwright specs for public pages, auth UI, navigation/404s, accessibility smoke checks and the brand/theme contract (brand.json → <title>, data-theme, --brand-primary, theme toggle). playwright.config.js boots the production build locally (scripts/e2e-server.js, degraded without a database); Chromium by default, all browsers with PLAYWRIGHT_ALL_BROWSERS=1. Runs nightly via .github/workflows/e2e.yml.",
+      "files": [
+        "playwright.config.js",
+        "scripts/e2e-server.js",
+        "e2e/@system/01-public-pages.spec.js",
+        "e2e/@system/02-auth.spec.js",
+        "e2e/@system/03-navigation.spec.js",
+        "e2e/@system/04-accessibility.spec.js",
+        "e2e/@system/05-brand-and-theme.spec.js",
+        "e2e/@system/retention.spec.js",
+        "e2e/fixtures/index.js",
+        "e2e/README.md"
+      ]
+    },
+    {
+      "id": "analytics-002",
+      "name": "Analytics Dashboard Module",
+      "category": "analytics",
+      "status": "planned",
+      "version": null,
+      "description": "Reusable analytics components: AnalyticsDashboard, MetricCard, TimeSeriesChart, DataTable, DateRangePicker. Backend: AnalyticsRepo with time-bucketed queries, /api/analytics endpoints. Extracted from common pattern across 17+ products.",
+      "files": [
+        "server/src/api/@system/analytics/index.js",
+        "server/src/db/repos/@system/AnalyticsRepo.js",
+        "server/src/db/migrations/@system/010_analytics_events.js",
+        "client/src/app/components/@system/Analytics/AnalyticsDashboard.jsx",
+        "client/src/app/components/@system/Analytics/MetricCard.jsx",
+        "client/src/app/components/@system/Analytics/TimeSeriesChart.jsx",
+        "client/src/app/components/@system/Analytics/DataTable.jsx",
+        "client/src/app/components/@system/Analytics/DateRangePicker.jsx",
+        "client/src/app/components/@system/Analytics/index.jsx"
+      ]
+    },
+    {
+      "id": "team-001",
+      "name": "Team & Workspace Module",
+      "category": "misc",
+      "status": "planned",
+      "module": "teams",
+      "version": null,
+      "description": "Multi-tenant workspace model with roles (owner/admin/editor/viewer). Invite flow, workspace switcher, RBAC middleware. Extracted from common pattern across 9+ products.",
+      "files": [
+        "server/src/db/schemas/@system/workspaces.sql",
+        "server/src/db/schemas/@system/workspace_members.sql",
+        "server/src/db/migrations/@system/011_workspaces.js",
+        "server/src/db/repos/@system/WorkspaceRepo.js",
+        "server/src/api/@system/workspaces/index.js",
+        "server/src/lib/@system/Helpers/rbac.js",
+        "client/src/app/hooks/@system/useWorkspace.js",
+        "client/src/app/components/@system/Workspace/WorkspaceSwitcher.jsx",
+        "client/src/app/components/@system/Workspace/InviteModal.jsx",
+        "client/src/app/components/@system/Workspace/MemberList.jsx",
+        "client/src/app/pages/app/@system/WorkspaceSettingsPage/index.jsx"
+      ]
+    },
+    {
+      "id": "search-001",
+      "name": "Search & Filter Module",
+      "category": "misc",
+      "status": "planned",
+      "version": null,
+      "description": "SearchBar with debounce, FilterBar with dynamic chips, CommandPalette (Cmd+K), PostgreSQL full-text search helper, saved filters. Extracted from common pattern across 8+ products.",
+      "files": [
+        "server/src/lib/@system/Search/index.js",
+        "server/src/db/repos/@system/SavedFilterRepo.js",
+        "server/src/db/migrations/@system/012_saved_filters.js",
+        "server/src/api/@system/search/index.js",
+        "client/src/app/components/@system/Search/SearchBar.jsx",
+        "client/src/app/components/@system/Search/FilterBar.jsx",
+        "client/src/app/components/@system/Search/CommandPalette.jsx",
+        "client/src/app/hooks/@system/useSearch.js",
+        "client/src/app/hooks/@system/useFilters.js"
+      ]
+    },
+    {
+      "id": "api-001",
+      "name": "API Key Management Module",
+      "category": "security",
+      "status": "planned",
+      "module": "apiKeys",
+      "version": null,
+      "description": "API key generation (prefix + hash), management UI, per-key rate limiting, request logging, apiKeyAuth middleware. Extracted from common pattern across 6+ products.",
+      "files": [
+        "server/src/db/schemas/@system/api_keys.sql",
+        "server/src/db/migrations/@system/013_api_keys.js",
+        "server/src/db/repos/@system/ApiKeyRepo.js",
+        "server/src/api/@system/api-keys/index.js",
+        "server/src/lib/@system/Helpers/apiKeyAuth.js",
+        "client/src/app/pages/app/@system/ApiKeysPage/index.jsx",
+        "client/src/app/components/@system/ApiKeys/ApiKeyList.jsx",
+        "client/src/app/components/@system/ApiKeys/CreateKeyModal.jsx"
+      ]
+    },
+    {
+      "id": "embed-001",
+      "name": "Embeddable Widget Module",
+      "category": "misc",
+      "status": "planned",
+      "version": null,
+      "description": "Widget embed script generator (<1KB), iframe sandboxing with postMessage, customization API, CORS config, EmbedCodeGenerator component. Extracted from common pattern across 5+ products.",
+      "files": [
+        "server/src/api/@system/embed/index.js",
+        "server/src/lib/@system/Embed/config.js",
+        "client/src/app/components/@system/Embed/EmbedCodeGenerator.jsx",
+        "client/src/app/components/@system/Embed/WidgetPreview.jsx",
+        "client/embed/@system/loader.js",
+        "client/embed/@system/widget.js"
+      ]
+    },
+    {
+      "id": "webhook-001",
+      "name": "Webhook System Module",
+      "category": "misc",
+      "status": "planned",
+      "module": "webhooks",
+      "version": null,
+      "description": "Outgoing webhooks with retry/backoff, incoming webhook verification, delivery logs, management UI. Extracted from common pattern across 5+ products.",
+      "files": [
+        "server/src/db/schemas/@system/webhook_endpoints.sql",
+        "server/src/db/schemas/@system/webhook_deliveries.sql",
+        "server/src/db/migrations/@system/014_webhooks.js",
+        "server/src/db/repos/@system/WebhookRepo.js",
+        "server/src/api/@system/webhooks/index.js",
+        "server/src/lib/@system/Webhook/dispatcher.js",
+        "server/src/lib/@system/Webhook/verifier.js",
+        "client/src/app/pages/app/@system/WebhooksPage/index.jsx",
+        "client/src/app/components/@system/Webhooks/WebhookForm.jsx",
+        "client/src/app/components/@system/Webhooks/DeliveryLog.jsx"
+      ]
+    },
+    {
+      "id": "data-001",
+      "name": "Import/Export Module",
+      "category": "misc",
+      "status": "planned",
+      "version": null,
+      "description": "CSV parser/generator (streaming), JSON export, background job for large exports, ImportWizard component, ExportButton. Extracted from common pattern across 6+ products.",
+      "files": [
+        "server/src/lib/@system/DataTransfer/csv.js",
+        "server/src/lib/@system/DataTransfer/json.js",
+        "server/src/lib/@system/DataTransfer/index.js",
+        "server/src/api/@system/import-export/index.js",
+        "client/src/app/components/@system/DataTransfer/ImportWizard.jsx",
+        "client/src/app/components/@system/DataTransfer/ExportButton.jsx",
+        "client/src/app/components/@system/DataTransfer/ColumnMapper.jsx"
+      ]
+    },
+    {
+      "id": "site-001",
+      "name": "Content-driven Informational Site",
+      "category": "site",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Single-page public website at / composed from one content file: navigation, hero, about, services, team, testimonials, contact section with API-key-free map embed. content/@system/site.js defaults deep-merged with content/@custom/site.js (objects merge, arrays replace); pages/static/@custom/SitePage delegates to the @system SitePage so products override composition without touching @system.",
+      "files": [
+        "client/src/app/pages/static/@system/SitePage/index.jsx",
+        "client/src/app/pages/static/@custom/SitePage/index.jsx",
+        "client/src/app/content/@system/site.js",
+        "client/src/app/content/@custom/site.js",
+        "client/src/app/components/@system/site",
+        "client/src/config/index.js",
+        "client/src/app/routes/@system/AppRoutes.jsx"
+      ]
+    },
+    {
+      "id": "contact-001",
+      "name": "Contact Form + Admin Inbox",
+      "category": "contact",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Public POST /api/contact (zod validation, honeypot, rate limit) stores submissions in contact_submissions and notifies CONTACT_NOTIFY_EMAIL (defaults to EMAIL_FROM). Admin-only inbox at /app/contact (Contact inbox sidebar entry) lists, reads and resolves submissions.",
+      "files": [
+        "server/src/api/@system/contact/index.js",
+        "server/src/db/migrations/@system/030_contact_submissions.js",
+        "client/src/app/pages/app/@system/ContactSubmissionsPage/index.jsx",
+        "client/src/app/config/@system/navigation-defaults.js",
+        "server/test/unit/@system/contact.validation.test.js"
+      ],
+      "envVars": [
+        "CONTACT_NOTIFY_EMAIL"
+      ]
+    },
+    {
+      "id": "imported-001",
+      "name": "Imported Sites (Orkosi website cloner contract)",
+      "category": "site",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "Sites cloned from an existing URL drop into client/src/app/pages/@custom/imported/<PascalName>/index.jsx (default-exported React components), styles into client/src/app/styles/@custom/imported/site.css and assets into client/public/imported/assets/ (copied to dist and served at /imported/assets/). Routes are registered in routes/@custom/index.jsx. See docs/INFORMATIONAL-SPEC.md section 6.",
+      "files": [
+        "client/src/app/pages/@custom/imported",
+        "client/src/app/routes/@custom/index.jsx",
+        "client/webpack.config.mjs",
+        "docs/INFORMATIONAL-SPEC.md"
+      ]
+    },
+    {
+      "id": "modules-001",
+      "name": "Feature-module switch (brand.json modules)",
+      "category": "modules",
+      "status": "built",
+      "version": "1.0.0",
+      "description": "brand.json `modules` gates the inherited SaaS surface instead of deleting it (keeps @system merges from upstream working). Keys: billing, teams, selfRegistration, apiKeys, web3, ai, usage, onboarding, blog, webhooks — all false in this template, absent = enabled. One resolver per side with identical defaults: server reads brand.json at boot (MODULES_JSON env override), client gets the webpack __MODULES__ DefinePlugin constant. Drives router mounting (generated barrel mount()), migration skipping (not recorded), scheduler task refusal, CSP Stripe defaults, 403 on the three register endpoints, client route/sidebar/navbar/auth-page filtering.",
+      "files": [
+        "brand.json",
+        "server/src/lib/@system/Helpers/modules.js",
+        "server/src/routes/@system/index.js",
+        "scripts/@system/generate-barrels.js",
+        "server/src/db/migrations/@system/run.js",
+        "server/src/scheduler/tasks/@system/base/BaseTask.js",
+        "server/src/scheduler/tasks/@system/scheduler.js",
+        "server/src/lib/@system/Middleware/security.js",
+        "client/webpack.config.mjs",
+        "client/src/config/@system/modules.js",
+        "client/src/app/routes/@system/AppRoutes.jsx",
+        "client/src/app/routes/@system/utils.js",
+        "client/src/app/config/@system/navigation-merge.js",
+        "client/src/app/pages/static/@system/AuthPage/index.jsx",
+        "docs/INFORMATIONAL-SPEC.md"
+      ],
+      "envVars": [
+        "MODULES_JSON"
+      ]
+    }
+  ],
+  "architecture": {
+    "pattern": "@system/@custom",
+    "rules": {
+      "system": "Template files shared across ALL products. Managed by Frederico. Synced automatically.",
+      "custom": "Product-specific files. Managed per-product. NEVER overwritten during template sync.",
+      "sync": "One-click sync updates ALL @system folders from the template GitHub repo. @custom folders are preserved.",
+      "autoLoader": "Entry points (index.jsx / index.js) auto-merge @system and @custom exports."
+    },
+    "syncProtocol": {
+      "command": "sync-template.sh",
+      "workflow": [
+        "1. Pull latest template from GitHub",
+        "2. For each @system folder: rsync --delete template/@system -> product/@system",
+        "3. Skip all @custom folders entirely",
+        "4. Run npm install if package.json changed",
+        "5. Run migrations if db/migrations/@system/ changed",
+        "6. Report what changed"
+      ]
+    }
+  },
+  "changelog": [
+    {
+      "date": "2026-02-26",
+      "version": "1.0.0",
+      "author": "frederico-junior",
+      "changes": "Initial manifest created. Scanned full product-template codebase. Documented all built features with file lists, categories, and status. Added planned features as placeholders for future tracking."
+    },
+    {
+      "date": "2026-02-26",
+      "version": "1.0.1",
+      "author": "frederico-junior",
+      "changes": "Added landing-002: FeaturesSection component (icon grid, 6 features). Extracted from inline LandingPage JSX into a standalone reusable component with optional props."
+    },
+    {
+      "date": "2026-02-26",
+      "version": "1.1.0",
+      "author": "frederico-junior",
+      "changes": "Completed payments-001 Stripe checkout flow: full webhook handler (checkout.session.completed, subscription.updated/deleted, invoice.payment_failed/succeeded), cancel/uncancel endpoints, customer portal, /subscriptions/plans endpoint, stripe_customer_id migration, client stripe.ts API module, BillingPage (live subscription + plan selection), PricingPage (public), /pricing route added."
+    },
+    {
+      "date": "2026-02-26",
+      "version": "1.2.0",
+      "author": "frederico-junior",
+      "changes": "email-001 upgraded to v2.0.0: built pluggable adapter architecture. Resend native REST API adapter (adapters/resend.js) — uses Node 18 fetch, no SDK dependency, supports cc/bcc/reply-to/attachments, verify() health check. SMTP adapter (adapters/smtp.js) — nodemailer wrapper with connection pooling, configurable TLS, works with Resend SMTP relay + SendGrid + Mailgun etc. Email index.js refactored to clean provider-selection logic (resend > smtp > ses > console). Admin API: GET /api/email/verify endpoint added. 29 unit tests — all passing."
+    },
+    {
+      "date": "2026-03-07",
+      "version": "1.3.0",
+      "author": "frederico-junior",
+      "changes": "Added notification-001: NotificationAdapter module documented in manifest. Unified notification system with Slack, Discord, and console adapters. Auto-detects provider from env vars. Supports severity levels (info/warning/error) and metadata fields. Added 'notification' category to manifest."
+    },
+    {
+      "date": "2026-03-07",
+      "version": "1.4.0",
+      "author": "frederico-junior",
+      "changes": "Added security-001: Rate Limiting feature to manifest. Comprehensive rate limiting implementation was already present in codebase but undocumented. Added 'security' category to manifest. Documented express-rate-limit middleware with Redis-backed store, general API limiter (100 req/min), and 15 endpoint-specific limiters for auth, TOTP, AI, admin, uploads, and integration tests. Auto-disabled in test/dev environments."
+    },
+    {
+      "date": "2026-03-14",
+      "version": "1.5.0",
+      "author": "frederico (factory-5)",
+      "changes": "Added 7 planned @system modules from common feature extraction analysis: analytics-002, team-001, search-001, api-001, embed-001, webhook-001, data-001. Analysis of 70 products identified repeated patterns across 17+ products for analytics, 9+ for team/workspace, 8+ for search, 6+ for API keys, 5+ for embeds, 5+ for webhooks, 6+ for import/export."
+    },
+    {
+      "date": "2026-04-06",
+      "version": "1.6.0",
+      "author": "tomas",
+      "changes": "legal-001 promoted from planned to built. Added GDPR compliance API (gdpr/index.js): POST /api/gdpr/consent (Art. 7), GET /api/gdpr/my-data (Art. 15), DELETE /api/gdpr/my-data (Art. 17). Added DB migration 015_gdpr_compliance.js creating gdpr_consent_log table. CookieConsentBanner, CookiePolicyPage, PrivacyPolicyPage, and TermsPage were already built; manifest now reflects this. Task #27886."
+    },
+    {
+      "date": "2026-04-08",
+      "version": "1.7.0",
+      "author": "frederico",
+      "changes": "Fixed 82 missing file references (#31357). Built features: corrected .tsx/.ts extensions to .jsx/.js, fixed flat-file paths to directory/index pattern (e.g. HomePage.tsx -> HomePage/index.jsx), fixed migration numbers (004->005 oauth, 006->010 stripe), removed non-existent files (LoginPage.tsx, RegisterPage.tsx replaced by AuthPage, Procfile, EmailLogRepo.js). Planned features: normalized .tsx/.ts to .jsx/.js to match codebase conventions. Updated autoLoader rule to reference index.jsx."
+    },
+    {
+      "date": "2026-09-20",
+      "version": "2.0.0",
+      "author": "romeo",
+      "changes": "A+ pass. Stack corrected (Webpack 5, App Runner, GitHub Actions + CodeBuild; Railway removed). devops-001 rewritten for the node:22 single-container image; added devops-003 (CI/CD pipeline) and testing-002 (Playwright E2E). Removed railway.json/.railway/Railway deploy scripts, legacy buildspec.yml, nginx-era client/server Dockerfiles, landing.html and stale task-artifact markdown."
+    }
+  ]
+}

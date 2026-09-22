@@ -1,0 +1,6 @@
+/* @system — Base styles. Overwritten during template sync.
+ * Products add custom styles in @custom/general.css (loaded AFTER this file). */
+.app-layout { min-height: 100vh; }
+.section-hero { padding-top: 4rem; padding-bottom: 4rem; }
+.section-content { padding-top: 3rem; padding-bottom: 3rem; }
+.card-interactive { transition: box-shadow 0.2s; cursor: pointer; }

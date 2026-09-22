@@ -1,0 +1,8 @@
+# Assimetria Product Template — Code Owners
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @frederico-assimetria
+
+# CI/CD workflows require explicit review
+.github/workflows/ @frederico-assimetria
